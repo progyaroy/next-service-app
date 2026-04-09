@@ -1,10 +1,10 @@
 "use server";
 
-import Database from "better-sqlite3";
 import { redirect } from "next/navigation";
 import { hashPassword, verifyPassword } from "@/lib/auth/password";
 import { clearSessionCookie, signSessionCookie } from "@/lib/auth/session";
-import { createUserRecord, findUserByEmail } from "@/lib/auth/user-repository";
+import { connectDB } from "@/lib/db/mongoose";
+import User from "@/lib/models/User";
 
 export type AuthFormState = {
   error?: string;
@@ -43,21 +43,34 @@ export async function registerAction(
     return { error: "Passwords do not match." };
   }
 
-  if (findUserByEmail(email)) {
-    return { error: "An account with this email already exists." };
-  }
-
-  const passwordHash = hashPassword(password);
   try {
-    const user = createUserRecord(email, passwordHash, "user");
-    await signSessionCookie(user);
-  } catch (e) {
-    if (e instanceof Database.SqliteError && e.code === "SQLITE_CONSTRAINT_UNIQUE") {
+    await connectDB();
+
+    const existingUser = await User.findOne({ email });
+    if (existingUser) {
       return { error: "An account with this email already exists." };
     }
-    throw e;
+
+    const passwordHash = hashPassword(password);
+    const user = await User.create({
+      email,
+      passwordHash,
+      role: "user",
+    });
+
+    const userId = user._id ? user._id.toString() : user.id;
+    await signSessionCookie({
+      id: userId,
+      email: user.email,
+      role: user.role,
+    });
+  } catch (e) {
+    console.error("Registration error:", e);
+    return { error: "Failed to create account." };
   }
-  redirect("/account");
+
+  // redirect must be called OUTSIDE try/catch
+  redirect("/user/account");
 }
 
 export async function loginAction(
@@ -75,21 +88,34 @@ export async function loginAction(
     return { error: "Enter your password." };
   }
 
-  const row = findUserByEmail(email);
-  if (!row) {
-    return { error: "Invalid email or password." };
+  try {
+    await connectDB();
+
+    const user = await User.findOne({ email });
+    if (!user) {
+      return { error: "Invalid email or password." };
+    }
+
+    const ok = verifyPassword(password, user.passwordHash);
+    if (!ok) {
+      return { error: "Invalid email or password." };
+    }
+
+    const userId = user._id ? user._id.toString() : user.id;
+
+    await signSessionCookie({
+      id: userId,
+      email: user.email,
+      role: user.role,
+    });
+  } catch (e) {
+    console.error("Login error:", e);
+    return { error: "Login failed. Please try again." };
   }
 
-  const ok = verifyPassword(password, row.passwordHash);
-  if (!ok) {
-    return { error: "Invalid email or password." };
-  }
-
-  const { passwordHash: _, ...user } = row;
-  await signSessionCookie(user);
-  redirect(next ?? "/account");
+  // redirect must be called OUTSIDE try/catch
+  redirect(next ?? "/user/account");
 }
-
 export async function logoutAction(): Promise<void> {
   await clearSessionCookie();
   redirect("/");

@@ -6,5 +6,7 @@ import { loginAction, type AuthFormState } from "@/lib/actions/auth";
 const initial: AuthFormState = {};
 
 export function useLogin() {
-  return useActionState(loginAction, initial);
+  const [state, formAction, pending] = useActionState(loginAction, initial);
+
+  return [state, formAction, pending] as const;
 }

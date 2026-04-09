@@ -3,7 +3,8 @@ import "server-only";
 import { cookies } from "next/headers";
 import { SignJWT, jwtVerify } from "jose";
 import type { User, UserRole } from "@/lib/auth/types";
-import { findUserById } from "@/lib/auth/user-repository";
+import { connectDB } from "@/lib/db/mongoose";
+import UserModel from "@/lib/models/User";
 
 const COOKIE_NAME = "parlour_session";
 
@@ -25,6 +26,7 @@ export async function signSessionCookie(user: {
   email: string;
   role: UserRole;
 }): Promise<void> {
+  console.log("[SESSION] Creating session for user:", user.email);
   const token = await new SignJWT({ email: user.email, role: user.role })
     .setProtectedHeader({ alg: "HS256" })
     .setSubject(user.id)
@@ -32,14 +34,20 @@ export async function signSessionCookie(user: {
     .setExpirationTime("7d")
     .sign(secretKey());
 
+  console.log("[SESSION] Token created, setting cookie");
   const jar = await cookies();
+  
+  const isProduction = process.env.NODE_ENV === "production";
+  console.log("[SESSION] Setting cookie with secure:", isProduction);
+  
   jar.set(COOKIE_NAME, token, {
     httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
+    secure: isProduction, // false in development, true in production
     sameSite: "lax",
-    maxAge: 60 * 60 * 24 * 7,
+    maxAge: 7 * 24 * 60 * 60, // 7 days in seconds
     path: "/",
   });
+  console.log("[SESSION] Cookie set successfully");
 }
 
 export async function clearSessionCookie(): Promise<void> {
@@ -54,13 +62,16 @@ async function verifyJwt(token: string): Promise<JwtClaims | null> {
     const { payload } = await jwtVerify(token, secretKey(), {
       algorithms: ["HS256"],
     });
-    const sub = payload.sub;
-    const email = payload.email;
-    const role = payload.role;
-    if (typeof sub !== "string" || typeof email !== "string") return null;
+    const sub = payload.sub as string | undefined;
+    const email = payload.email as string | undefined;
+    const role = payload.role as string | undefined;
+    
+    if (!sub || typeof sub !== "string" || !email || typeof email !== "string") return null;
     if (role !== "user" && role !== "admin") return null;
+    
     return { sub, email, role };
-  } catch {
+  } catch (e) {
+    console.error("JWT verification failed:", e);
     return null;
   }
 }
@@ -72,9 +83,20 @@ export async function getCurrentUser(): Promise<User | null> {
   if (!token) return null;
 
   const claims = await verifyJwt(token);
-  if (!claims) return null;
+  if (!claims || !claims.sub) return null;
 
-  const user = findUserById(claims.sub);
-  if (!user || user.email !== claims.email) return null;
-  return user;
+  await connectDB();
+  try {
+    const user = await UserModel.findById(claims.sub);
+    if (!user || user.email !== claims.email) return null;
+    
+    return {
+      id: user._id.toString(),
+      email: user.email,
+      role: user.role,
+      createdAt: user.createdAt.getTime(),
+    };
+  } catch {
+    return null;
+  }
 }
