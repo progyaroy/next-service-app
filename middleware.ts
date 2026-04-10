@@ -54,7 +54,7 @@ export async function middleware(request: NextRequest) {
     }
 
     if (pathname.startsWith("/admin") && role !== "admin") {
-      return NextResponse.redirect(new URL("/user/account", request.url));
+      return NextResponse.redirect(new URL("/account", request.url));
     }
 
     console.log("[MIDDLEWARE] Token verified successfully for user with role:", role);

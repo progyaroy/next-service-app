@@ -1,30 +1,48 @@
-export default function AdminDashboard() {
+import { connectDB } from "@/lib/db/mongoose";
+import Product from "@/lib/models/Product";
+import Category from "@/lib/models/Category";
+import User from "@/lib/models/User";
+
+export const metadata = {
+  title: "Admin Dashboard",
+  description: "Admin dashboard",
+};
+
+export default async function AdminDashboard() {
+  await connectDB();
+
+  const productCount = await Product.countDocuments();
+  const categoryCount = await Category.countDocuments();
+  const userCount = await User.countDocuments();
+
   return (
-    <div>
-      <h1 className="text-3xl font-bold text-gray-900 mb-8">Dashboard</h1>
-
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="bg-white rounded-lg shadow p-6">
-          <h2 className="text-gray-600 text-sm font-medium">Total Products</h2>
-          <p className="text-3xl font-bold text-gray-900 mt-2">0</p>
-        </div>
-
-        <div className="bg-white rounded-lg shadow p-6">
-          <h2 className="text-gray-600 text-sm font-medium">Total Categories</h2>
-          <p className="text-3xl font-bold text-gray-900 mt-2">0</p>
-        </div>
-
-        <div className="bg-white rounded-lg shadow p-6">
-          <h2 className="text-gray-600 text-sm font-medium">Total Users</h2>
-          <p className="text-3xl font-bold text-gray-900 mt-2">0</p>
-        </div>
+    <div className="space-y-6">
+      <div>
+        <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
+        <p className="text-gray-600 mt-1">Welcome to admin panel</p>
       </div>
 
-      <div className="mt-8 bg-white rounded-lg shadow p-6">
-        <h2 className="text-xl font-bold text-gray-900 mb-4">Welcome to Admin Panel</h2>
-        <p className="text-gray-600">
-          Use the sidebar to manage products and categories.
-        </p>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="bg-white rounded-lg border border-gray-200 p-6">
+          <h3 className="text-sm font-medium text-gray-500 uppercase tracking-wide">
+            Total Products
+          </h3>
+          <p className="text-3xl font-bold text-gray-900 mt-2">{productCount}</p>
+        </div>
+
+        <div className="bg-white rounded-lg border border-gray-200 p-6">
+          <h3 className="text-sm font-medium text-gray-500 uppercase tracking-wide">
+            Total Categories
+          </h3>
+          <p className="text-3xl font-bold text-gray-900 mt-2">{categoryCount}</p>
+        </div>
+
+        <div className="bg-white rounded-lg border border-gray-200 p-6">
+          <h3 className="text-sm font-medium text-gray-500 uppercase tracking-wide">
+            Total Users
+          </h3>
+          <p className="text-3xl font-bold text-gray-900 mt-2">{userCount}</p>
+        </div>
       </div>
     </div>
   );

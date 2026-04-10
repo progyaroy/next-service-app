@@ -17,14 +17,17 @@ import {
   TextInput,
   TextLink,
 } from "@/components/ui";
-import { useLogin } from "./useLogin";
+import { useActionState } from "react";
+import { loginAction, type AuthFormState } from "@/lib/actions/auth";
 
 export type LoginProps = {
   nextPath?: string;
 };
 
 export default function Login({ nextPath }: LoginProps) {
-  const [state, formAction, pending] = useLogin();
+
+  const initial: AuthFormState = {};
+  const [state, formAction, pending] = useActionState(loginAction, initial);
 
   return (
     <div className="mx-auto flex max-w-md flex-1 flex-col justify-center px-4 py-16 sm:px-6">

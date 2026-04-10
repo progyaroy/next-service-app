@@ -16,6 +16,7 @@ export {
   CardDescription,
   CardTitle,
 } from "@/components/ui/card";
+export { DataTable, type DataTableProps } from "@/components/ui/data-table";
 export {
   DescriptionDetails,
   DescriptionGroup,

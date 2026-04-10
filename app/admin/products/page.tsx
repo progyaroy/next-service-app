@@ -1,21 +1,15 @@
-import Link from "next/link";
+import { connectDB } from "@/lib/db/mongoose";
+import Product from "@/lib/models/Product";
+import { ProductsList } from "@/components/modules/admin/products/list";
 
-export default function AdminProductsPage() {
-  return (
-    <div>
-      <div className="flex justify-between items-center mb-8">
-        <h1 className="text-3xl font-bold text-gray-900">Products</h1>
-        <Link
-          href="/admin/products/new"
-          className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition"
-        >
-          Add Product
-        </Link>
-      </div>
+export const metadata = {
+  title: "Products",
+  description: "Manage products",
+};
 
-      <div className="bg-white p-8 rounded-lg shadow text-center">
-        <p className="text-gray-500">No products found</p>
-      </div>
-    </div>
-  );
+export default async function ProductsPage() {
+  await connectDB();
+  const products = await Product.find().sort({ createdAt: -1 });
+
+  return <ProductsList products={JSON.parse(JSON.stringify(products))} />;
 }

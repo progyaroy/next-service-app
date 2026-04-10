@@ -14,10 +14,13 @@ import {
   TextInput,
   TextLink,
 } from "@/components/ui";
-import { useRegister } from "./useRegister";
+import { useActionState } from "react";
+import { registerAction, type AuthFormState } from "@/lib/actions/auth";
+
+const initial: AuthFormState = {};
 
 export default function Register() {
-  const [state, formAction, pending] = useRegister();
+  const [state, formAction, pending] = useActionState(registerAction, initial);
 
   return (
     <div className="mx-auto flex max-w-md flex-1 flex-col justify-center px-4 py-16 sm:px-6">
