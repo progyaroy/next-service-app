@@ -7,11 +7,13 @@ import {
   CardContent,
   CardDescription,
   CardTitle,
+  Checkbox,
   Form,
   FormAlert,
   FormField,
   FormFooterText,
   HiddenInput,
+  Label,
   TextInput,
   TextLink,
 } from "@/components/ui";
@@ -55,6 +57,17 @@ export default function Login({ nextPath }: LoginProps) {
                 disabled={pending}
               />
             </FormField>
+
+            <div className="flex items-center gap-2">
+              <Checkbox
+                id="remember-me"
+                name="rememberMe"
+                disabled={pending}
+              />
+              <Label htmlFor="remember-me" className="cursor-pointer text-sm">
+                Remember me for 30 days
+              </Label>
+            </div>
 
             <FormAlert>{state.error}</FormAlert>
 

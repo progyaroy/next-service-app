@@ -24,8 +24,9 @@ function formatMemberSince(createdAtMs: number): string {
 
 export default async function Account() {
   const user = await getCurrentUser();
+  console.log("user", user);
   if (!user) {
-    redirect("/login?next=/account");
+    redirect("/login");
   }
 
   const joined = formatMemberSince(user.createdAt);

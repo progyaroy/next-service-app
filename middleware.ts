@@ -38,7 +38,7 @@ export async function middleware(request: NextRequest) {
 
   if (!token) {
     console.log("[MIDDLEWARE] No token found for path:", pathname);
-    const loginUrl = new URL("/auth/login", request.url);
+    const loginUrl = new URL("/login", request.url);
     loginUrl.searchParams.set("next", pathname);
     return NextResponse.redirect(loginUrl);
   }
@@ -62,7 +62,7 @@ export async function middleware(request: NextRequest) {
   } catch (err) {
     console.error("[MIDDLEWARE] JWT ERROR:", err);
 
-    const loginUrl = new URL("/auth/login", request.url);
+    const loginUrl = new URL("/login", request.url);
     loginUrl.searchParams.set("next", pathname);
     return NextResponse.redirect(loginUrl);
   }

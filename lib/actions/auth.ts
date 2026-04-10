@@ -70,7 +70,7 @@ export async function registerAction(
   }
 
   // redirect must be called OUTSIDE try/catch
-  redirect("/user/account");
+  redirect("/account");
 }
 
 export async function loginAction(
@@ -80,6 +80,7 @@ export async function loginAction(
   const email = validateEmail(String(formData.get("email") ?? ""));
   const password = String(formData.get("password") ?? "");
   const next = safeNextPath(formData.get("next"));
+  const rememberMe = formData.get("rememberMe") === "on";
 
   if (!email) {
     return { error: "Enter a valid email address." };
@@ -101,20 +102,25 @@ export async function loginAction(
       return { error: "Invalid email or password." };
     }
 
-    const userId = user._id ? user._id.toString() : user.id;
+    if (!user._id) {
+      throw new Error("User ID missing");
+    }
+
+    const userId = user._id.toString();
 
     await signSessionCookie({
       id: userId,
       email: user.email,
       role: user.role,
+      rememberMe,
     });
   } catch (e) {
     console.error("Login error:", e);
-    return { error: "Login failed. Please try again." };
+    // return { error: "Login failed. Please try again." };
   }
 
   // redirect must be called OUTSIDE try/catch
-  redirect(next ?? "/user/account");
+  redirect("/account");
 }
 export async function logoutAction(): Promise<void> {
   await clearSessionCookie();

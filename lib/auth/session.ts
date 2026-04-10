@@ -25,26 +25,31 @@ export async function signSessionCookie(user: {
   id: string;
   email: string;
   role: UserRole;
+  rememberMe?: boolean;
 }): Promise<void> {
   console.log("[SESSION] Creating session for user:", user.email);
+  
+  // 7 days for normal session, 30 days for remember me
+  const sessionDuration = user.rememberMe ? 30 * 24 * 60 * 60 : 7 * 24 * 60 * 60;
+  
   const token = await new SignJWT({ email: user.email, role: user.role })
     .setProtectedHeader({ alg: "HS256" })
     .setSubject(user.id)
     .setIssuedAt()
-    .setExpirationTime("7d")
+    .setExpirationTime(`${sessionDuration}s`)
     .sign(secretKey());
 
   console.log("[SESSION] Token created, setting cookie");
   const jar = await cookies();
   
   const isProduction = process.env.NODE_ENV === "production";
-  console.log("[SESSION] Setting cookie with secure:", isProduction);
+  console.log("[SESSION] Setting cookie with secure:", isProduction, "duration:", sessionDuration);
   
   jar.set(COOKIE_NAME, token, {
     httpOnly: true,
     secure: isProduction, // false in development, true in production
     sameSite: "lax",
-    maxAge: 7 * 24 * 60 * 60, // 7 days in seconds
+    maxAge: sessionDuration,
     path: "/",
   });
   console.log("[SESSION] Cookie set successfully");
@@ -88,6 +93,7 @@ export async function getCurrentUser(): Promise<User | null> {
   await connectDB();
   try {
     const user = await UserModel.findById(claims.sub);
+    // const user = await UserModel.findOne({ _id: claims.sub });
     if (!user || user.email !== claims.email) return null;
     
     return {
