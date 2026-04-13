@@ -1,18 +1,7 @@
 "use server";
 
 import { redirect } from "next/navigation";
-import { getCurrentUser } from "@/lib/auth/session";
-import { connectDB } from "@/lib/db/mongoose";
-import Product from "@/lib/models/Product";
-import Category from "@/lib/models/Category";
-
-async function checkAdminAccess() {
-  const user = await getCurrentUser();
-  if (!user || user.role !== "admin") {
-    redirect("/");
-  }
-  return user;
-}
+import { productService, categoryService } from "@/lib/services/product.service";
 
 function getFormValue(formData: FormData, key: string): string {
   const value = formData.get(key);
@@ -22,8 +11,6 @@ function getFormValue(formData: FormData, key: string): string {
 
 // Category Actions
 export async function createCategory(prevState: any, formData: FormData) {
-  await checkAdminAccess();
-  
   const name = getFormValue(formData, "name");
   const description = getFormValue(formData, "description");
 
@@ -32,20 +19,19 @@ export async function createCategory(prevState: any, formData: FormData) {
   }
 
   try {
-    await connectDB();
-    const category = await Category.create({ name, description });
-    return { success: true, data: category };
+    await categoryService.createCategory(name, description);
   } catch (error: any) {
     if (error.code === 11000) {
       return { error: "Category already exists" };
     }
+    console.error("Create category error:", error);
     return { error: "Failed to create category" };
   }
+  
+  redirect("/admin/categories");
 }
 
 export async function updateCategory(id: string, prevState: any, formData: FormData) {
-  await checkAdminAccess();
-  
   const name = getFormValue(formData, "name");
   const description = getFormValue(formData, "description");
 
@@ -54,93 +40,94 @@ export async function updateCategory(id: string, prevState: any, formData: FormD
   }
 
   try {
-    await connectDB();
-    const category = await Category.findByIdAndUpdate(
-      id,
-      { name, description },
-      { new: true }
-    );
-    return { success: true, data: category };
+    const result = await categoryService.updateCategory(id, { name, description });
+    if (!result) {
+      return { error: "Category not found" };
+    }
   } catch (error) {
+    console.error("Update category error:", error);
     return { error: "Failed to update category" };
   }
+  
+  redirect("/admin/categories");
 }
 
 export async function deleteCategory(id: string) {
-  await checkAdminAccess();
-
   try {
-    await connectDB();
-    await Category.findByIdAndDelete(id);
-    return { success: true };
+    await categoryService.deleteCategory(id);
   } catch (error) {
+    console.error("Delete category error:", error);
     return { error: "Failed to delete category" };
   }
+  
+  redirect("/admin/categories");
 }
 
 // Product Actions
 export async function createProduct(prevState: any, formData: FormData) {
-  await checkAdminAccess();
-  
   const name = getFormValue(formData, "name");
   const description = getFormValue(formData, "description");
   const price = parseFloat(getFormValue(formData, "price") || "0");
-  const category = getFormValue(formData, "category");
+  const categoryId = getFormValue(formData, "category");
   const stock = parseInt(getFormValue(formData, "stock") || "0");
 
-  if (!name || !description || !category || price <= 0 || stock < 0) {
+  if (!name || !description || !categoryId || price <= 0 || stock < 0) {
     return { error: "All fields are required and valid" };
   }
 
   try {
-    await connectDB();
-    const product = await Product.create({
+    await productService.createProduct(
       name,
       description,
       price,
-      category,
-      stock,
-    });
-    return { success: true, data: product };
+      categoryId,
+      stock
+    );
   } catch (error) {
+    console.error("Create product error:", error);
     return { error: "Failed to create product" };
   }
+  
+  redirect("/admin/products");
 }
 
 export async function updateProduct(id: string, prevState: any, formData: FormData) {
-  await checkAdminAccess();
-  
   const name = getFormValue(formData, "name");
   const description = getFormValue(formData, "description");
   const price = parseFloat(getFormValue(formData, "price") || "0");
-  const category = getFormValue(formData, "category");
+  const categoryId = getFormValue(formData, "category");
   const stock = parseInt(getFormValue(formData, "stock") || "0");
 
-  if (!name || !description || !category || price <= 0 || stock < 0) {
+  if (!name || !description || !categoryId || price <= 0 || stock < 0) {
     return { error: "All fields are required and valid" };
   }
 
   try {
-    await connectDB();
-    const product = await Product.findByIdAndUpdate(
-      id,
-      { name, description, price, category, stock },
-      { new: true }
-    );
-    return { success: true, data: product };
+    const result = await productService.updateProduct(id, {
+      name,
+      description,
+      price,
+      category: categoryId,
+      stock,
+    });
+    if (!result) {
+      return { error: "Product not found" };
+    }
   } catch (error) {
+    console.error("Update product error:", error);
     return { error: "Failed to update product" };
   }
+  
+  redirect("/admin/products");
 }
 
 export async function deleteProduct(id: string) {
-  await checkAdminAccess();
-
   try {
-    await connectDB();
-    await Product.findByIdAndDelete(id);
-    return { success: true };
+    await productService.deleteProduct(id);
   } catch (error) {
+    console.error("Delete product error:", error);
     return { error: "Failed to delete product" };
   }
+  
+  redirect("/admin/products");
 }

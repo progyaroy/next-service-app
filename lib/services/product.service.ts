@@ -1,6 +1,7 @@
 import "server-only";
 
 import { connectDB } from "@/lib/db/mongoose";
+import { serialize } from "@/lib/db/serialize";
 import Product from "@/lib/models/Product";
 import Category from "@/lib/models/Category";
 import type { IProduct } from "@/lib/models/Product";
@@ -12,27 +13,27 @@ export type CategoryDTO = Omit<ICategory, "toObject" | "save">;
 class ProductService {
   async getAllProducts(): Promise<ProductDTO[]> {
     await connectDB();
-    const products = await Product.find({}).sort({ createdAt: -1 }).lean();
-    return products as ProductDTO[];
+    const products = await Product.find({}).sort({ createdAt: -1 }).populate("category", "name").lean();
+    return serialize(products as ProductDTO[]);
   }
 
   async getProductsByCategory(category: string): Promise<ProductDTO[]> {
     await connectDB();
     const products = await Product.find({ category }).sort({ createdAt: -1 }).lean();
-    return products as ProductDTO[];
+    return serialize(products as ProductDTO[]);
   }
 
   async getProductById(id: string): Promise<ProductDTO | null> {
     await connectDB();
     const product = await Product.findById(id).lean();
-    return product as ProductDTO | null;
+    return serialize(product as ProductDTO | null);
   }
 
   async createProduct(
     name: string,
     description: string,
     price: number,
-    category: string,
+    categoryId: string,
     stock: number,
     image?: string
   ): Promise<ProductDTO> {
@@ -41,20 +42,20 @@ class ProductService {
       name,
       description,
       price,
-      category,
+      category: categoryId,
       stock,
       image,
     });
-    return product.toObject() as ProductDTO;
+    return serialize(product.toObject() as ProductDTO);
   }
 
   async updateProduct(
     id: string,
-    updates: Partial<Omit<ProductDTO, "_id" | "createdAt">>
+    updates: any
   ): Promise<ProductDTO | null> {
     await connectDB();
     const product = await Product.findByIdAndUpdate(id, updates, { new: true }).lean();
-    return product as ProductDTO | null;
+    return serialize(product as ProductDTO | null);
   }
 
   async deleteProduct(id: string): Promise<boolean> {
@@ -68,13 +69,13 @@ class CategoryService {
   async getAllCategories(): Promise<CategoryDTO[]> {
     await connectDB();
     const categories = await Category.find({}).sort({ createdAt: -1 }).lean();
-    return categories as CategoryDTO[];
+    return serialize(categories as CategoryDTO[]);
   }
 
   async getCategoryById(id: string): Promise<CategoryDTO | null> {
     await connectDB();
     const category = await Category.findById(id).lean();
-    return category as CategoryDTO | null;
+    return serialize(category as CategoryDTO | null);
   }
 
   async createCategory(name: string, description?: string): Promise<CategoryDTO> {
@@ -83,7 +84,7 @@ class CategoryService {
       name,
       description,
     });
-    return category.toObject() as CategoryDTO;
+    return serialize(category.toObject() as CategoryDTO);
   }
 
   async updateCategory(
@@ -92,7 +93,7 @@ class CategoryService {
   ): Promise<CategoryDTO | null> {
     await connectDB();
     const category = await Category.findByIdAndUpdate(id, updates, { new: true }).lean();
-    return category as CategoryDTO | null;
+    return serialize(category as CategoryDTO | null);
   }
 
   async deleteCategory(id: string): Promise<boolean> {

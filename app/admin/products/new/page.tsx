@@ -1,3 +1,4 @@
+import { categoryService } from "@/lib/services/product.service";
 import NewProduct from "@/components/modules/admin/products/new";
 
 export const metadata = {
@@ -5,6 +6,13 @@ export const metadata = {
   description: "Create a new product",
 };
 
-export default function NewProductPage() {
-  return <NewProduct />;
+export default async function NewProductPage() {
+  const categories = await categoryService.getAllCategories();
+  
+  const serialized = categories.map((cat: any) => ({
+    _id: String(cat._id),
+    name: cat.name,
+  }));
+
+  return <NewProduct categories={serialized} />;
 }

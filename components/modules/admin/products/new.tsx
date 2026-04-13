@@ -12,24 +12,19 @@ import { Button } from "@/components/ui/button";
 import { FormAlert } from "@/components/ui/form-alert";
 import { createProduct } from "@/lib/actions/admin";
 
-export default function NewProduct() {
-  const [categories, setCategories] = useState<any[]>([]);
+interface Category {
+  _id: string;
+  name: string;
+}
+
+interface NewProductProps {
+  categories: Category[];
+}
+
+export default function NewProduct({ categories }: NewProductProps) {
   const [state, formAction, isPending] = useActionState(createProduct, {
     error: "",
   });
-
-  useEffect(() => {
-    const fetchCategories = async () => {
-      try {
-        const res = await fetch("/api/categories");
-        const data = await res.json();
-        setCategories(data);
-      } catch (error) {
-        console.error("Failed to fetch categories");
-      }
-    };
-    fetchCategories();
-  }, []);
 
   return (
     <div className="space-y-6">
@@ -83,7 +78,7 @@ export default function NewProduct() {
           <Select name="category" required>
             <option value="">Select a category</option>
             {categories.map((cat: any) => (
-              <option key={cat._id} value={cat.name}>
+              <option key={cat._id} value={cat._id}>
                 {cat.name}
               </option>
             ))}

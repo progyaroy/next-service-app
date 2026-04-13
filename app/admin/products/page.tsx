@@ -9,7 +9,7 @@ export const metadata = {
 
 export default async function ProductsPage() {
   await connectDB();
-  const products = await Product.find().sort({ createdAt: -1 });
-
+  const products = await Product.find().populate("category", "name").sort({ createdAt: -1 });
+console.log(products);
   return <ProductsList products={JSON.parse(JSON.stringify(products))} />;
 }

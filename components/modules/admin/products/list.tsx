@@ -8,6 +8,8 @@ interface ProductsListProps {
 }
 
 export function ProductsList({ products }: ProductsListProps) {
+console.log(products[0]);
+
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
@@ -26,7 +28,11 @@ export function ProductsList({ products }: ProductsListProps) {
       <DataTable
         columns={[
           { key: "name", label: "Name" },
-          { key: "category", label: "Category" },
+          {
+            key: "category",
+            label: "Category",
+            render: (value) => value?.name || value,
+          },
           {
             key: "price",
             label: "Price",
