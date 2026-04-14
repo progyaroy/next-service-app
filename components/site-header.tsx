@@ -15,11 +15,15 @@ export async function SiteHeader() {
           <ButtonLink href="/" variant="ghost" size="sm">
             Home
           </ButtonLink>
+          <ButtonLink href="/products" variant="ghost" size="sm">
+            Products
+          </ButtonLink>
           {user ? (
             <>
               <ButtonLink href="/account" variant="ghost" size="sm">
                 Account
               </ButtonLink>
+
               <Form action={logoutAction} className="inline">
                 <Button type="submit" variant="ghostAccent" size="sm">
                   Sign out

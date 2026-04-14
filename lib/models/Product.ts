@@ -4,7 +4,7 @@ export interface IProduct extends Document {
   name: string;
   description: string;
   price: number;
-  category: Types.ObjectId;
+  category: Types.ObjectId | { _id: Types.ObjectId; name: string };
   stock: number;
   image?: string;
   createdAt: Date;

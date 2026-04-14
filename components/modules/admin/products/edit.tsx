@@ -70,7 +70,7 @@ export default function EditProductForm({ id, initialData, categories }: EditPro
       </div>
 
       <FormField id="category" label="Category">
-        <Select name="category" defaultValue={initialData.category?._id || initialData.category} required>
+        <Select name="category" defaultValue={initialData.category || ""} required>
           <option value="">Select a category</option>
           {categories.map((cat: any) => (
             <option key={cat._id} value={cat._id}>

@@ -1,16 +1,16 @@
-interface Column<T> {
+export interface Column<T> {
   key: keyof T;
   label: string;
   render?: (value: any, item: T) => React.ReactNode;
 }
 
-interface DataTableProps<T> {
+export interface DataTableProps<T> {
   columns: Column<T>[];
   data: T[];
   actions?: (item: T) => React.ReactNode;
 }
 
-export function DataTable<T extends { _id?: string; id?: string }>({
+export function DataTable<T>({
   columns,
   data,
   actions,
@@ -36,8 +36,8 @@ export function DataTable<T extends { _id?: string; id?: string }>({
           </tr>
         </thead>
         <tbody className="divide-y divide-gray-200">
-          {data.map((item) => (
-            <tr key={String(item._id || item.id)} className="hover:bg-gray-50">
+          {data.map((item, index) => (
+            <tr key={String((item as any)._id || (item as any).id || index)} className="hover:bg-gray-50">
               {columns.map((col) => (
                 <td
                   key={String(col.key)}

@@ -25,7 +25,7 @@ class ProductService {
 
   async getProductById(id: string): Promise<ProductDTO | null> {
     await connectDB();
-    const product = await Product.findById(id).lean();
+    const product = await Product.findById(id).populate("category", "name").lean();
     return serialize(product as ProductDTO | null);
   }
 

@@ -1,3 +1,5 @@
+import mongoose from "mongoose";
+
 type Serializable =
   | string
   | number
@@ -9,22 +11,41 @@ type Serializable =
 const serializeMongo = (data: unknown): Serializable => {
   if (data === null || data === undefined) return null;
 
+  // Handle ObjectId
+  if (data instanceof mongoose.Types.ObjectId) {
+    return data.toString();
+  }
+
+  // Handle Date
+  if (data instanceof Date) {
+    return data.toISOString();
+  }
+
+  // Handle Array
   if (Array.isArray(data)) {
     return data.map((item) => serializeMongo(item));
   }
 
+  // Handle Object
   if (typeof data === "object") {
-    const obj = data as Record<string, any>;
-
+    const obj = data as Record<string, unknown>;
     const result: Record<string, Serializable> = {};
 
     for (const key in obj) {
-      if (key === "_id") {
-        result[key] = obj[key]?.toString();
-      } else if (obj[key] instanceof Date) {
-        result[key] = obj[key].toISOString();
+      const value = obj[key];
+      
+      if (value === null || value === undefined) {
+        result[key] = null;
+      } else if (value instanceof mongoose.Types.ObjectId) {
+        result[key] = value.toString();
+      } else if (value instanceof Date) {
+        result[key] = value.toISOString();
+      } else if (Array.isArray(value)) {
+        result[key] = serializeMongo(value);
+      } else if (typeof value === "object") {
+        result[key] = serializeMongo(value);
       } else {
-        result[key] = serializeMongo(obj[key]);
+        result[key] = value as Serializable;
       }
     }
 

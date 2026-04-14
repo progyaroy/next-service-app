@@ -1,5 +1,5 @@
-import Register, { registerMetadata } from "@/components/modules/auth/register";
+import Register from "@/components/modules/auth/register";
 
-export const metadata = registerMetadata;
+// export const metadata = registerMetadata;
 
 export default Register;
