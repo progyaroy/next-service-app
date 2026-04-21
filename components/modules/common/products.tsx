@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { Card } from "@/components/ui/card";
+import { AddToCartButton } from "@/components/ui/add-to-cart-button";
 
 interface Product {
   _id: string;
@@ -176,9 +177,9 @@ export default function Products({
                   const gradient = getGradient(product._id);
 
                   return (
-                    <Link key={product._id} href={`/products/${product._id}`}>
-                      <Card className="h-full hover:shadow-lg transition-shadow cursor-pointer overflow-hidden">
-                        {/* Image */}
+                    <Card key={product._id} className="h-full hover:shadow-lg transition-shadow overflow-hidden flex flex-col">
+                      {/* Image */}
+                      <Link href={`/products/${product._id}`} className="flex-1">
                         <div
                           className={`bg-gradient-to-br ${gradient} h-48 flex items-center justify-center`}
                         >
@@ -186,21 +187,23 @@ export default function Products({
                             📦
                           </div>
                         </div>
+                      </Link>
 
-                        {/* Info */}
-                        <div className="p-4">
-                          <div className="mb-2">
-                            <span
-                              className="inline-block text-xs font-semibold px-2 py-1 rounded"
-                              style={{
-                                backgroundColor: "var(--shop-rose-soft)",
-                                color: "var(--shop-rose-strong)",
-                              }}
-                            >
-                              {product.category?.name || "Uncategorized"}
-                            </span>
-                          </div>
+                      {/* Info */}
+                      <div className="p-4 flex flex-col flex-1">
+                        <div className="mb-2">
+                          <span
+                            className="inline-block text-xs font-semibold px-2 py-1 rounded"
+                            style={{
+                              backgroundColor: "var(--shop-rose-soft)",
+                              color: "var(--shop-rose-strong)",
+                            }}
+                          >
+                            {product.category?.name || "Uncategorized"}
+                          </span>
+                        </div>
 
+                        <Link href={`/products/${product._id}`} className="flex-1">
                           <h3 className="text-lg font-semibold text-gray-900 mb-2 line-clamp-2">
                             {product.name}
                           </h3>
@@ -208,32 +211,42 @@ export default function Products({
                           <p className="text-gray-600 text-sm mb-4 line-clamp-2">
                             {product.description}
                           </p>
+                        </Link>
 
-                          <div className="flex justify-between items-center">
-                            <span
-                              className="text-2xl font-bold"
-                              style={{
-                                color: "var(--shop-rose-strong)",
-                              }}
-                            >
-                              ${product.price.toFixed(2)}
-                            </span>
+                        <div className="flex justify-between items-center mb-4">
+                          <span
+                            className="text-2xl font-bold"
+                            style={{
+                              color: "var(--shop-rose-strong)",
+                            }}
+                          >
+                            ${product.price.toFixed(2)}
+                          </span>
 
-                            <span
-                              className={`text-sm font-medium ${
-                                product.stock > 0
-                                  ? "text-green-600"
-                                  : "text-red-600"
-                              }`}
-                            >
-                              {product.stock > 0
-                                ? "In Stock"
-                                : "Out of Stock"}
-                            </span>
-                          </div>
+                          <span
+                            className={`text-sm font-medium ${
+                              product.stock > 0
+                                ? "text-green-600"
+                                : "text-red-600"
+                            }`}
+                          >
+                            {product.stock > 0
+                              ? "In Stock"
+                              : "Out of Stock"}
+                          </span>
                         </div>
-                      </Card>
-                    </Link>
+
+                        {product.stock > 0 && (
+                          <div className="mt-auto">
+                            <AddToCartButton
+                              productId={product._id}
+                              quantity={1}
+                              disabled={product.stock === 0}
+                            />
+                          </div>
+                        )}
+                      </div>
+                    </Card>
                   );
                 })}
               </div>

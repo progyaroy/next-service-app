@@ -40,3 +40,5 @@ export {
 export { Select } from "@/components/ui/select";
 export { TextArea } from "@/components/ui/textarea";
 export { TextLink } from "@/components/ui/text-link";
+export { AddToCartButton } from "@/components/ui/add-to-cart-button";
+export { CartIcon } from "@/components/ui/cart-icon";

@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { AddToCartButton } from "@/components/ui/add-to-cart-button";
 
 interface Product {
   _id: string;
@@ -21,32 +22,6 @@ interface ProductDetailsProps {
 
 export default function ProductDetails({ product }: ProductDetailsProps) {
   const [quantity, setQuantity] = useState(1);
-  const [addedToCart, setAddedToCart] = useState(false);
-
-  const handleAddToCart = () => {
-    // Get existing cart from localStorage
-    const cart = JSON.parse(localStorage.getItem("cart") || "[]");
-    
-    // Check if product already in cart
-    const existingItem = cart.find((item: any) => item._id === product._id);
-    
-    if (existingItem) {
-      existingItem.quantity += quantity;
-    } else {
-      cart.push({
-        _id: product._id,
-        name: product.name,
-        price: product.price,
-        quantity,
-      });
-    }
-    
-    localStorage.setItem("cart", JSON.stringify(cart));
-    setAddedToCart(true);
-    
-    // Reset message after 2 seconds
-    setTimeout(() => setAddedToCart(false), 2000);
-  };
 
   const handleQuantityChange = (value: number) => {
     const newQuantity = Math.max(1, Math.min(value, product.stock));
@@ -147,19 +122,11 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
               </div>
 
               {/* Add to Cart Button */}
-              <Button
-                onClick={handleAddToCart}
-                className="w-full bg-rose-600 text-white py-3 rounded-lg hover:bg-rose-700 transition-colors font-semibold text-lg"
-              >
-                {addedToCart ? "✓ Added to Cart" : "Add to Cart"}
-              </Button>
-
-              {/* Success Message */}
-              {addedToCart && (
-                <div className="bg-green-50 border border-green-200 text-green-800 px-4 py-3 rounded-lg">
-                  Product added to cart successfully!
-                </div>
-              )}
+              <AddToCartButton
+                productId={product._id}
+                quantity={quantity}
+                className="w-full"
+              />
             </div>
           )}
 
