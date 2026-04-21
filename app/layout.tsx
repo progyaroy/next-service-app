@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { SiteHeader } from "@/components/modules/header/site-header";
 import { CartProvider } from "@/lib/context/CartContext";
+import { ErrorBoundary } from "@/components/error-boundary";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -33,10 +34,12 @@ export default async function RootLayout({
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="flex min-h-full flex-col text-[var(--shop-ink)]">
-        <CartProvider>
-          <SiteHeader />
-          {children}
-        </CartProvider>
+        <ErrorBoundary>
+          <CartProvider>
+            <SiteHeader />
+            {children}
+          </CartProvider>
+        </ErrorBoundary>
       </body>
     </html>
   );

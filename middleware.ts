@@ -30,18 +30,18 @@ export async function middleware(request: NextRequest) {
   }
 
   const token = request.cookies.get(COOKIE_NAME)?.value;
-  const allCookies = request.cookies.getAll();
 
-  // console.log("[MIDDLEWARE] Request to:", pathname);
-  // console.log("[MIDDLEWARE] All cookies:", allCookies.map(c => c.name));
-  // console.log("[MIDDLEWARE] Token found:", !!token);
-
-  // If user is authenticated and trying to access login/register, redirect to home
-  if (token && (pathname === "/login" || pathname === "/register")) {
-    // console.log("[MIDDLEWARE] Authenticated user trying to access auth page, redirecting to home");
-    return NextResponse.redirect(new URL("/", request.url));
+  // Allow unauthenticated access to login/register
+  if (pathname === "/login" || pathname === "/register") {
+    // If user is authenticated, redirect to home
+    if (token) {
+      return NextResponse.redirect(new URL("/", request.url));
+    }
+    // Allow unauthenticated users to access these pages
+    return NextResponse.next();
   }
 
+  // For all other protected routes, require authentication
   if (!token) {
     console.log("[MIDDLEWARE] No token found for path:", pathname);
     const loginUrl = new URL("/login", request.url);
@@ -50,7 +50,6 @@ export async function middleware(request: NextRequest) {
   }
 
   try {
-    // console.log("[MIDDLEWARE] Verifying token for path:", pathname);
     const { payload } = await jwtVerify(token, getSecretKey());
 
     const role = payload.role as string | undefined;
@@ -63,7 +62,6 @@ export async function middleware(request: NextRequest) {
       return NextResponse.redirect(new URL("/account", request.url));
     }
 
-    // console.log("[MIDDLEWARE] Token verified successfully for user with role:", role);
     return NextResponse.next();
   } catch (err) {
     console.error("[MIDDLEWARE] JWT ERROR:", err);

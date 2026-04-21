@@ -16,21 +16,10 @@ export function HeaderNav({ initialUser }: HeaderNavProps) {
 
   useEffect(() => {
     setIsHydrated(true);
-    
-    // Check for auth state changes by listening to storage events
-    // This handles login/logout in other tabs
-    const handleStorageChange = () => {
-      // Trigger a re-check of auth state
-      // In a real app, you might use a custom event or polling
-      window.location.reload();
-    };
-
-    window.addEventListener("storage", handleStorageChange);
-    return () => window.removeEventListener("storage", handleStorageChange);
   }, []);
 
-  // On mount, verify the initial user state is still valid
-  // This ensures the header reflects current auth state after page refresh
+  // Verify auth state on mount only
+  // CartContext handles visibility/focus events for cart refresh
   useEffect(() => {
     if (!isHydrated) return;
 
@@ -48,6 +37,7 @@ export function HeaderNav({ initialUser }: HeaderNavProps) {
       }
     };
 
+    // Verify on mount only
     verifyAuth();
   }, [isHydrated]);
 
@@ -78,11 +68,11 @@ export function HeaderNav({ initialUser }: HeaderNavProps) {
       </ButtonLink>
       {user ? (
         <>
-          <CartIcon />
-          <ButtonLink href="/account" variant="ghost" size="sm">
-            Account
-          </ButtonLink>
 
+          <ButtonLink href="/account" variant="ghost" size="sm">
+            Dashboard
+          </ButtonLink>
+          <CartIcon />
           <Form action={logoutAction} className="inline">
             <Button type="submit" variant="ghostAccent" size="sm">
               Sign out

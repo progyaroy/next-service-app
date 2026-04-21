@@ -35,45 +35,70 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  /**
+   * Fetch cart from API with error handling
+   * Only called on mount and when user performs cart mutations
+   */
   const refreshCart = useCallback(async () => {
     try {
       setIsLoading(true);
       setError(null);
-      const response = await fetch("/api/cart", { cache: "no-store" });
+
+      const response = await fetch("/api/cart", {
+        cache: "no-store",
+        signal: AbortSignal.timeout(5000), // 5 second timeout
+      });
 
       if (response.status === 401) {
+        // User not authenticated
         setCart(null);
         setItemCount(0);
         return;
       }
 
       if (!response.ok) {
-        throw new Error("Failed to fetch cart");
+        throw new Error(`Failed to fetch cart: ${response.statusText}`);
       }
 
       const data = await response.json();
-      setCart(data);
 
-      const count = data.items?.reduce(
-        (sum: number, item: CartItem) => sum + item.quantity,
+      // Handle new API response format { success, data, error, timestamp }
+      const cartData = data.data || data;
+
+      // Validate response structure
+      if (!cartData.items || !Array.isArray(cartData.items)) {
+        throw new Error("Invalid cart response structure");
+      }
+
+      setCart(cartData);
+
+      // Calculate item count safely
+      const count = cartData.items.reduce(
+        (sum: number, item: CartItem) => sum + (item.quantity || 0),
         0
-      ) || 0;
+      );
       setItemCount(count);
+      setError(null);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Unknown error");
-      setCart(null);
-      setItemCount(0);
+      const errorMessage =
+        err instanceof Error ? err.message : "Failed to load cart";
+      setError(errorMessage);
+      console.error("[CartContext] Error refreshing cart:", err);
+      // Don't clear cart on error - keep stale data
     } finally {
       setIsLoading(false);
     }
   }, []);
 
+  // Initial cart load on mount only
   useEffect(() => {
     refreshCart();
   }, [refreshCart]);
 
   return (
-    <CartContext.Provider value={{ cart, itemCount, isLoading, error, refreshCart }}>
+    <CartContext.Provider
+      value={{ cart, itemCount, isLoading, error, refreshCart }}
+    >
       {children}
     </CartContext.Provider>
   );

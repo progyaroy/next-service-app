@@ -116,11 +116,12 @@ export async function loginAction(
     });
   } catch (e) {
     console.error("Login error:", e);
-    // return { error: "Login failed. Please try again." };
+    return { error: "Login failed. Please try again." };
   }
 
   // redirect must be called OUTSIDE try/catch
-  redirect("/account");
+  // Use next path if provided, otherwise redirect to account
+  redirect(next || "/account");
 }
 export async function logoutAction(): Promise<void> {
   await clearSessionCookie();

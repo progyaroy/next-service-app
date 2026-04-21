@@ -7,7 +7,6 @@ import {
   removeFromCartAction,
   updateCartQuantityAction,
   clearCartAction,
-  type CartActionState,
 } from "@/lib/actions/cart";
 import { Button, Card, CardContent, CardTitle } from "@/components/ui";
 
@@ -56,18 +55,18 @@ export default function CartModule() {
 
   if (isLoading) {
     return (
-      <div className="mx-auto max-w-5xl px-4 py-8 sm:px-6">
-        <p className="text-center">Loading cart...</p>
+      <div className="mx-auto max-w-6xl px-4 py-8">
+        <p className="text-center text-gray-600">Loading cart...</p>
       </div>
     );
   }
 
   if (!cart || itemCount === 0) {
     return (
-      <div className="mx-auto max-w-5xl px-4 py-8 sm:px-6">
+      <div className="mx-auto max-w-6xl px-4 py-12">
         <Card>
           <CardContent className="py-12 text-center">
-            <p className="mb-4 text-lg">Your cart is empty</p>
+            <p className="mb-4 text-gray-600">Your cart is empty</p>
             <Link href="/products">
               <Button variant="primary">Continue Shopping</Button>
             </Link>
@@ -83,8 +82,8 @@ export default function CartModule() {
   }, 0);
 
   return (
-    <div className="mx-auto max-w-5xl px-4 py-8 sm:px-6">
-      <h1 className="mb-6 text-2xl font-bold">Shopping Cart</h1>
+    <div className="mx-auto max-w-6xl px-4 py-8">
+      <h1 className="mb-8 text-2xl font-bold">Shopping Cart ({itemCount} items)</h1>
 
       <div className="grid gap-6 lg:grid-cols-3">
         {/* Cart Items */}
@@ -92,60 +91,44 @@ export default function CartModule() {
           <Card>
             <CardContent className="divide-y">
               {cart.items.map((item) => (
-                <div key={item.productId} className="flex gap-4 py-4 first:pt-0 last:pb-0">
-                  {/* Product Image */}
-                  {item.product?.image && (
-                    <img
-                      src={item.product.image}
-                      alt={item.product.name}
-                      className="h-20 w-20 rounded object-cover"
-                    />
-                  )}
-
+                <div key={item.productId} className="flex gap-4 py-3 first:pt-3 last:pb-3">
                   {/* Product Details */}
-                  <div className="flex-1">
-                    <h3 className="font-semibold">{item.product?.name || "Product"}</h3>
-                    <p className="text-sm text-gray-600">
-                      ${item.product?.price?.toFixed(2) || "0.00"}
+                  <div className="flex-1 min-w-0">
+                    <h3 className="font-semibold text-sm text-gray-900">{item.product?.name || "Product"}</h3>
+                    <p className="text-xs text-gray-600 mt-1">
+                      ${item.product?.price?.toFixed(2) || "0.00"} each
                     </p>
 
-                    {/* Quantity Control */}
-                    <div className="mt-2 flex items-center gap-2">
-                      <label htmlFor={`qty-${item.productId}`} className="text-sm">
-                        Qty:
-                      </label>
+                    {/* Quantity & Remove */}
+                    <div className="mt-2 flex items-center gap-3">
                       <select
                         value={item.quantity}
                         onChange={(e) => {
                           handleUpdate(item.productId, parseInt(e.target.value));
                         }}
                         disabled={isPending}
-                        className="rounded border border-gray-300 px-2 py-1 text-sm disabled:opacity-50"
+                        className="rounded border border-gray-300 px-2 py-1 text-xs disabled:opacity-50"
                       >
                         {Array.from({ length: item.product?.stock || 10 }, (_, i) => (
                           <option key={i + 1} value={i + 1}>
-                            {i + 1}
+                            Qty: {i + 1}
                           </option>
                         ))}
                       </select>
+                      <button
+                        onClick={() => handleRemove(item.productId)}
+                        disabled={isPending}
+                        className="text-xs text-red-600 hover:text-red-800 disabled:opacity-50"
+                      >
+                        Remove
+                      </button>
                     </div>
-
-                    {/* Remove Button */}
-                    <button
-                      onClick={() => handleRemove(item.productId)}
-                      disabled={isPending}
-                      className="mt-2 text-sm text-red-600 hover:text-red-800 disabled:opacity-50"
-                    >
-                      Remove
-                    </button>
                   </div>
 
                   {/* Subtotal */}
-                  <div className="text-right">
-                    <p className="font-semibold">
-                      ${(
-                        (item.product?.price || 0) * item.quantity
-                      ).toFixed(2)}
+                  <div className="text-right whitespace-nowrap">
+                    <p className="font-semibold text-sm">
+                      ${((item.product?.price || 0) * item.quantity).toFixed(2)}
                     </p>
                   </div>
                 </div>
@@ -158,7 +141,7 @@ export default function CartModule() {
             <button
               onClick={handleClear}
               disabled={isPending}
-              className="text-sm text-gray-600 hover:text-gray-800 disabled:opacity-50"
+              className="text-xs text-gray-600 hover:text-gray-800 disabled:opacity-50"
             >
               Clear Cart
             </button>
@@ -168,23 +151,23 @@ export default function CartModule() {
         {/* Order Summary */}
         <div>
           <Card>
-            <CardTitle className="border-b p-4">Order Summary</CardTitle>
-            <CardContent className="space-y-4 pt-4">
-              <div className="flex justify-between">
-                <span>Subtotal</span>
-                <span>${total.toFixed(2)}</span>
+            <CardTitle className="border-b p-4 text-lg">Order Summary</CardTitle>
+            <CardContent className="space-y-3 pt-4">
+              <div className="flex justify-between text-sm">
+                <span className="text-gray-600">Subtotal</span>
+                <span className="font-medium">${total.toFixed(2)}</span>
               </div>
-              <div className="flex justify-between">
-                <span>Shipping</span>
-                <span>Free</span>
+              <div className="flex justify-between text-sm">
+                <span className="text-gray-600">Shipping</span>
+                <span className="font-medium text-green-600">Free</span>
               </div>
-              <div className="border-t pt-4 font-semibold">
-                <div className="flex justify-between">
+              <div className="border-t pt-3">
+                <div className="flex justify-between font-semibold">
                   <span>Total</span>
-                  <span>${total.toFixed(2)}</span>
+                  <span className="text-lg text-rose-600">${total.toFixed(2)}</span>
                 </div>
               </div>
-              <Button variant="primary" className="w-full">
+              <Button variant="primary" className="w-full mt-4">
                 Proceed to Checkout
               </Button>
               <Link href="/products">
@@ -199,7 +182,7 @@ export default function CartModule() {
 
       {/* Error Messages */}
       {error && (
-        <div className="mt-4 rounded bg-red-50 p-4 text-red-600">
+        <div className="mt-4 rounded bg-red-50 p-3 text-sm text-red-600">
           {error}
         </div>
       )}
