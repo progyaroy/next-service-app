@@ -1,6 +1,7 @@
 "use client";
 
 import { useTransition, useState } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useCart } from "@/lib/context/CartContext";
 import {
@@ -8,12 +9,15 @@ import {
   updateCartQuantityAction,
   clearCartAction,
 } from "@/lib/actions/cart";
+import { placeOrderAction } from "@/lib/actions/order";
 import { Button, Card, CardContent, CardTitle } from "@/components/ui";
 
 export default function CartModule() {
+  const router = useRouter();
   const { cart, itemCount, isLoading, refreshCart } = useCart();
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
 
   const handleRemove = (productId: string) => {
     startTransition(async () => {
@@ -49,6 +53,24 @@ export default function CartModule() {
         setError(result.error);
       } else {
         await refreshCart();
+      }
+    });
+  };
+
+  const handlePlaceOrder = () => {
+    setError(null);
+    setSuccess(null);
+    startTransition(async () => {
+      const result = await placeOrderAction();
+      if (result.error) {
+        setError(result.error);
+      } else {
+        setSuccess("Order placed successfully!");
+        await refreshCart();
+        // Redirect to orders page after 2 seconds
+        setTimeout(() => {
+          router.push("/orders");
+        }, 2000);
       }
     });
   };
@@ -167,8 +189,13 @@ export default function CartModule() {
                   <span className="text-lg text-rose-600">${total.toFixed(2)}</span>
                 </div>
               </div>
-              <Button variant="primary" className="w-full mt-4">
-                Proceed to Checkout
+              <Button
+                onClick={handlePlaceOrder}
+                disabled={isPending}
+                className="w-full mt-4"
+                variant="primary"
+              >
+                {isPending ? "Placing Order..." : "Place Order"}
               </Button>
               <Link href="/products">
                 <Button variant="ghost" className="w-full">
@@ -179,6 +206,13 @@ export default function CartModule() {
           </Card>
         </div>
       </div>
+
+      {/* Success Message */}
+      {success && (
+        <div className="mt-4 rounded bg-green-50 p-3 text-sm text-green-600">
+          ✓ {success}
+        </div>
+      )}
 
       {/* Error Messages */}
       {error && (

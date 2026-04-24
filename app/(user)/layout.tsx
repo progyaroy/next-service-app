@@ -31,6 +31,12 @@ export default async function UserLayout({
             Account
           </Link>
           <Link
+            href="/orders"
+            className="block px-4 py-2 rounded-lg text-gray-700 hover:bg-gray-100 transition-colors"
+          >
+            Orders
+          </Link>
+          <Link
             href="/profile"
             className="block px-4 py-2 rounded-lg text-gray-700 hover:bg-gray-100 transition-colors"
           >
