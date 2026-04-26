@@ -4,13 +4,19 @@ import Link from "next/link";
 import { useCart } from "@/lib/context/CartContext";
 
 export function CartIcon() {
-  const { itemCount } = useCart();
+  const { itemCount, isLoading } = useCart();
+
+  // Don't render the badge until the client has fetched the cart.
+  // Prevents server/client HTML mismatch: server always renders 0,
+  // client may have a real count — suppressing until hydration is complete
+  // is the correct pattern for async-initialized client state.
+  const showBadge = !isLoading && itemCount > 0;
 
   return (
     <Link
       href="/cart"
       className="relative inline-flex items-center justify-center w-10 h-10 rounded-md hover:bg-[var(--shop-surface-hover)] transition-colors"
-      aria-label={`Shopping cart with ${itemCount} items`}
+      aria-label={`Shopping cart${showBadge ? `, ${itemCount} items` : ""}`}
     >
       <svg
         className="w-5 h-5"
@@ -25,7 +31,7 @@ export function CartIcon() {
           d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"
         />
       </svg>
-      {itemCount > 0 && (
+      {showBadge && (
         <span className="absolute top-0 right-0 inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-white transform translate-x-1/2 -translate-y-1/2 bg-red-600 rounded-full">
           {itemCount > 99 ? "99+" : itemCount}
         </span>

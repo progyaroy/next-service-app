@@ -60,7 +60,6 @@ import { connectDB } from "@/lib/db/mongoose";
 import Product from "@/lib/models/Product";
 import Category from "@/lib/models/Category";
 
-export const dynamic = "force-static";
 export const revalidate = 60;
 
 export const metadata = {
@@ -90,9 +89,9 @@ async function getData() {
     price: product.price,
     category: product.category
       ? {
-          _id: String(product.category._id),
-          name: product.category.name,
-        }
+        _id: String(product.category._id),
+        name: product.category.name,
+      }
       : null,
     stock: product.stock,
     image: product.image,

@@ -25,6 +25,7 @@ interface CartContextType {
   isLoading: boolean;
   error: string | null;
   refreshCart: () => Promise<void>;
+  clearCart: () => void;
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
@@ -35,10 +36,6 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  /**
-   * Fetch cart from API with error handling
-   * Only called on mount and when user performs cart mutations
-   */
   const refreshCart = useCallback(async () => {
     try {
       setIsLoading(true);
@@ -46,11 +43,10 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
 
       const response = await fetch("/api/cart", {
         cache: "no-store",
-        signal: AbortSignal.timeout(5000), // 5 second timeout
+        signal: AbortSignal.timeout(5000),
       });
 
       if (response.status === 401) {
-        // User not authenticated
         setCart(null);
         setItemCount(0);
         return;
@@ -61,44 +57,40 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       }
 
       const data = await response.json();
-
-      // Handle new API response format { success, data, error, timestamp }
       const cartData = data.data || data;
 
-      // Validate response structure
       if (!cartData.items || !Array.isArray(cartData.items)) {
         throw new Error("Invalid cart response structure");
       }
 
       setCart(cartData);
-
-      // Calculate item count safely
       const count = cartData.items.reduce(
         (sum: number, item: CartItem) => sum + (item.quantity || 0),
         0
       );
       setItemCount(count);
-      setError(null);
     } catch (err) {
-      const errorMessage =
-        err instanceof Error ? err.message : "Failed to load cart";
-      setError(errorMessage);
+      setError(err instanceof Error ? err.message : "Failed to load cart");
       console.error("[CartContext] Error refreshing cart:", err);
-      // Don't clear cart on error - keep stale data
     } finally {
       setIsLoading(false);
     }
   }, []);
 
-  // Initial cart load on mount only
+  // Clear cart state immediately (used on logout)
+  const clearCart = useCallback(() => {
+    setCart(null);
+    setItemCount(0);
+    setError(null);
+  }, []);
+
+  // Fetch cart once on mount
   useEffect(() => {
     refreshCart();
   }, [refreshCart]);
 
   return (
-    <CartContext.Provider
-      value={{ cart, itemCount, isLoading, error, refreshCart }}
-    >
+    <CartContext.Provider value={{ cart, itemCount, isLoading, error, refreshCart, clearCart }}>
       {children}
     </CartContext.Provider>
   );

@@ -58,6 +58,18 @@ export async function middleware(request: NextRequest) {
       throw new Error("Invalid token payload - no role");
     }
 
+    // Admins cannot access user-facing shop routes
+    const isUserOnlyRoute =
+      pathname.startsWith("/cart") ||
+      pathname.startsWith("/payment") ||
+      pathname.startsWith("/order") ||
+      pathname.startsWith("/account");
+
+    if (role === "admin" && isUserOnlyRoute) {
+      return NextResponse.redirect(new URL("/admin", request.url));
+    }
+
+    // Non-admins cannot access admin routes
     if (pathname.startsWith("/admin") && role !== "admin") {
       return NextResponse.redirect(new URL("/account", request.url));
     }
@@ -75,8 +87,12 @@ export async function middleware(request: NextRequest) {
 export const config = {
   matcher: [
     "/admin/:path*",
-    "/user/:path*",
     "/account/:path*",
+    "/cart/:path*",
+    "/cart",
+    "/payment/:path*",
+    "/orders/:path*",
+    "/order-confirmation/:path*",
     "/profile/:path*",
     "/settings/:path*",
     "/login",

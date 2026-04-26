@@ -1,10 +1,13 @@
-import { logoutAction } from "@/lib/actions/auth";
+import { unstable_noStore as noStore } from "next/cache";
 import { getCurrentUser } from "@/lib/auth/session";
-import { Button, ButtonLink, Form } from "@/components/ui";
-import { CartIcon } from "@/components/ui/cart-icon";
+import { ButtonLink } from "@/components/ui";
 import { HeaderNav } from "./header-nav";
 
 export async function SiteHeader() {
+  // Opt out of static rendering so cookies() always resolves correctly,
+  // even when the parent page is force-static or ISR.
+  noStore();
+
   const user = await getCurrentUser();
 
   return (
@@ -13,7 +16,7 @@ export async function SiteHeader() {
         <ButtonLink href="/" variant="brand" size="sm">
           Lumière Parlour
         </ButtonLink>
-        <HeaderNav initialUser={user} />
+        <HeaderNav user={user} />
       </div>
     </header>
   );

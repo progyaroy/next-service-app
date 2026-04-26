@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import { Suspense } from "react";
 import { SiteHeader } from "@/components/modules/header/site-header";
 import { CartProvider } from "@/lib/context/CartContext";
 import { ErrorBoundary } from "@/components/error-boundary";
@@ -23,6 +24,14 @@ export const metadata: Metadata = {
   description: "Book services and shop retail — parlour MVP (App Router, Server Actions).",
 };
 
+function HeaderSkeleton() {
+  return (
+    <header className="border-b border-[var(--shop-border)] bg-[var(--shop-surface)]/90 backdrop-blur-md">
+      <div className="mx-auto flex h-14 max-w-5xl items-center justify-between gap-4 px-4 sm:px-6" />
+    </header>
+  );
+}
+
 export default async function RootLayout({
   children,
 }: Readonly<{
@@ -36,7 +45,9 @@ export default async function RootLayout({
       <body className="flex min-h-full flex-col text-[var(--shop-ink)]">
         <ErrorBoundary>
           <CartProvider>
-            <SiteHeader />
+            <Suspense fallback={<HeaderSkeleton />}>
+              <SiteHeader />
+            </Suspense>
             {children}
           </CartProvider>
         </ErrorBoundary>

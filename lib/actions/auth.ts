@@ -82,34 +82,24 @@ export async function loginAction(
   const next = safeNextPath(formData.get("next"));
   const rememberMe = formData.get("rememberMe") === "on";
 
-  if (!email) {
-    return { error: "Enter a valid email address." };
-  }
-  if (!password) {
-    return { error: "Enter your password." };
-  }
+  if (!email) return { error: "Enter a valid email address." };
+  if (!password) return { error: "Enter your password." };
+
+  let role: string;
 
   try {
     await connectDB();
 
     const user = await User.findOne({ email });
-    if (!user) {
+    if (!user || !verifyPassword(password, user.passwordHash)) {
       return { error: "Invalid email or password." };
     }
+    if (!user._id) throw new Error("User ID missing");
 
-    const ok = verifyPassword(password, user.passwordHash);
-    if (!ok) {
-      return { error: "Invalid email or password." };
-    }
-
-    if (!user._id) {
-      throw new Error("User ID missing");
-    }
-
-    const userId = user._id.toString();
+    role = user.role;
 
     await signSessionCookie({
-      id: userId,
+      id: user._id.toString(),
       email: user.email,
       role: user.role,
       rememberMe,
@@ -119,9 +109,9 @@ export async function loginAction(
     return { error: "Login failed. Please try again." };
   }
 
-  // redirect must be called OUTSIDE try/catch
-  // Use next path if provided, otherwise redirect to account
-  redirect(next || "/account");
+  // redirect() must be called outside try/catch
+  // next param takes priority (e.g. redirected from a protected page)
+  redirect(next ?? (role === "admin" ? "/admin" : "/account"));
 }
 export async function logoutAction(): Promise<void> {
   await clearSessionCookie();
