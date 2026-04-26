@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { usePathname } from "next/navigation";
 import { logoutAction } from "@/lib/actions/auth";
 import { Button, ButtonLink, Form } from "@/components/ui";
 import { CartIcon } from "@/components/ui/cart-icon";
@@ -13,16 +14,15 @@ interface HeaderNavProps {
 export function HeaderNav({ initialUser }: HeaderNavProps) {
   const [user, setUser] = useState<User | null>(initialUser);
   const [isHydrated, setIsHydrated] = useState(false);
+  const pathname = usePathname();
 
   useEffect(() => {
     setIsHydrated(true);
   }, []);
 
-  // Verify auth state on mount only
-  // CartContext handles visibility/focus events for cart refresh
+  // Re-fetch auth state on every route change so navbar updates after login/logout
+  // without needing a full page refresh
   useEffect(() => {
-    if (!isHydrated) return;
-
     const verifyAuth = async () => {
       try {
         const res = await fetch("/api/auth/me", { cache: "no-store" });
@@ -37,9 +37,8 @@ export function HeaderNav({ initialUser }: HeaderNavProps) {
       }
     };
 
-    // Verify on mount only
     verifyAuth();
-  }, [isHydrated]);
+  }, [pathname]);
 
   // Prevent hydration mismatch by not rendering auth-dependent content until hydrated
   if (!isHydrated) {
