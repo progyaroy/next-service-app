@@ -1,5 +1,4 @@
 import { forwardRef, type ButtonHTMLAttributes, type ReactNode } from "react";
-import Link, { type LinkProps } from "next/link";
 import { cn } from "@/lib/utils/cn";
 
 const focusRing =
@@ -89,24 +88,3 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button
     />
   );
 });
-
-export type ButtonLinkProps = LinkProps &
-  ButtonStyleProps & {
-    className?: string;
-    children?: ReactNode;
-  };
-
-export function ButtonLink({
-  className,
-  variant = "primary",
-  size = "md",
-  fullWidth,
-  ...props
-}: ButtonLinkProps) {
-  return (
-    <Link
-      className={buttonClassName({ variant, size, fullWidth, className })}
-      {...props}
-    />
-  );
-}

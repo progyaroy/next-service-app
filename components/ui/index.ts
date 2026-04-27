@@ -1,14 +1,13 @@
 export { BackLink } from "@/components/ui/back-link";
 export {
   Button,
-  ButtonLink,
   buttonClassName,
-  type ButtonLinkProps,
   type ButtonProps,
   type ButtonSize,
   type ButtonStyleProps,
   type ButtonVariant,
 } from "@/components/ui/button";
+export { ButtonLink, type ButtonLinkProps } from "@/components/ui/button-link";
 export { Checkbox, type CheckboxProps } from "@/components/ui/checkbox";
 export {
   Card,
