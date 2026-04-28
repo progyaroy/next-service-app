@@ -1,22 +1,25 @@
 "use client";
 
 import Link from "next/link";
+import { useEffect, useState } from "react";
 import { useCart } from "@/lib/context/CartContext";
 
 export function CartIcon() {
   const { itemCount, isLoading } = useCart();
+  const [mounted, setMounted] = useState(false);
 
-  // Don't render the badge until the client has fetched the cart.
-  // Prevents server/client HTML mismatch: server always renders 0,
-  // client may have a real count — suppressing until hydration is complete
-  // is the correct pattern for async-initialized client state.
-  const showBadge = !isLoading && itemCount > 0;
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  // Only show badge after hydration to prevent SSR/client mismatch
+  const showBadge = mounted && !isLoading && itemCount > 0;
 
   return (
     <Link
       href="/cart"
       className="relative inline-flex items-center justify-center w-10 h-10 rounded-md hover:bg-[var(--shop-surface-hover)] transition-colors"
-      aria-label={`Shopping cart${showBadge ? `, ${itemCount} items` : ""}`}
+      aria-label={showBadge ? `Shopping cart, ${itemCount} items` : "Shopping cart"}
     >
       <svg
         className="w-5 h-5"

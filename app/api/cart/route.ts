@@ -65,6 +65,44 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
   }
 });
 
+// POST /api/cart - Add item to cart
+export const POST = withErrorHandling(async (request: NextRequest) => {
+  const userId = await getUserIdFromToken(request);
+  if (!userId) throw new AuthenticationError("Session expired or invalid");
+
+  const { itemId, itemType, quantity } = await request.json();
+  const cart = await cartService.addToCart(userId, itemId, itemType || "product", quantity || 1);
+  return successResponse(cart);
+});
+
+// PUT /api/cart - Update item quantity
+export const PUT = withErrorHandling(async (request: NextRequest) => {
+  const userId = await getUserIdFromToken(request);
+  if (!userId) throw new AuthenticationError("Session expired or invalid");
+
+  const { itemId, itemType, quantity } = await request.json();
+  const cart = await cartService.updateQuantity(userId, itemId, quantity, itemType || "product");
+  return successResponse(cart);
+});
+
+// DELETE /api/cart - Remove item or clear cart
+export const DELETE = withErrorHandling(async (request: NextRequest) => {
+  const userId = await getUserIdFromToken(request);
+  if (!userId) throw new AuthenticationError("Session expired or invalid");
+
+  const { searchParams } = new URL(request.url);
+  const itemId = searchParams.get("itemId");
+  const itemType = (searchParams.get("itemType") || "product") as any;
+
+  if (itemId) {
+    const cart = await cartService.removeFromCart(userId, itemId, itemType);
+    return successResponse(cart ?? { items: [] });
+  }
+
+  await cartService.clearCart(userId);
+  return successResponse({ items: [] });
+});
+
 // HEAD /api/cart/count - Get cart item count
 export async function HEAD(request: NextRequest) {
   const userId = await getUserIdFromToken(request);
