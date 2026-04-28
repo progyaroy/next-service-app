@@ -40,7 +40,7 @@ export function buttonClassName({
       ghost:
         "rounded-full text-[var(--shop-muted)] hover:bg-[var(--shop-rose-soft)] hover:text-[var(--shop-ink)]",
       ghostAccent:
-        "rounded-full font-medium text-[var(--shop-rose-strong)] hover:bg-[var(--shop-rose-soft)]",
+        "rounded-full font-medium text-[var(--shop-rose-strong)] hover:bg-[var(--shop-rose-soft)] underline underline-offset-4 hover:opacity-90",
       link: "rounded-md text-[var(--shop-rose-strong)] underline underline-offset-4 hover:opacity-90",
       brand:
         "rounded-lg px-2 py-2 font-serif text-base font-semibold text-[var(--shop-ink)] hover:bg-[var(--shop-rose-soft)]/60",

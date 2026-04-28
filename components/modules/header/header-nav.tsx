@@ -17,7 +17,7 @@ export function HeaderNav({ user }: HeaderNavProps) {
 
   const LogoutButton = (
     <Form action={handleLogout} className="inline">
-      <Button type="submit" variant="ghostAccent" size="sm">
+      <Button type="submit" variant="secondary" size="sm">
         Sign out
       </Button>
     </Form>
@@ -29,18 +29,7 @@ export function HeaderNav({ user }: HeaderNavProps) {
         <ButtonLink href="/admin" variant="ghost" size="sm">
           Dashboard
         </ButtonLink>
-        <ButtonLink href="/admin/products" variant="ghost" size="sm">
-          Products
-        </ButtonLink>
-        <ButtonLink href="/admin/services" variant="ghost" size="sm">
-          Services
-        </ButtonLink>
-        <ButtonLink href="/admin/orders" variant="ghost" size="sm">
-          Orders
-        </ButtonLink>
-        <ButtonLink href="/admin/users" variant="ghost" size="sm">
-          Users
-        </ButtonLink>
+    
         {LogoutButton}
       </nav>
     );
