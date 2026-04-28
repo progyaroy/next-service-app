@@ -47,7 +47,7 @@ export default async function AdminOrdersPage() {
           <CardContent className="p-6">
             <p className="text-xs text-gray-600">Total Revenue</p>
             <p className="text-2xl font-bold text-green-600">
-              ${totalRevenue.toFixed(2)}
+              ₹{totalRevenue.toFixed(2)}
             </p>
           </CardContent>
         </Card>
@@ -106,9 +106,14 @@ export default async function AdminOrdersPage() {
                     </td>
                     <td className="px-6 py-4 text-sm">
                       {order.items.length} item{order.items.length !== 1 ? "s" : ""}
+                      {order.items.some((i: any) => i.itemType === "service") && (
+                        <span className="ml-2 text-xs px-1.5 py-0.5 rounded" style={{ backgroundColor: "var(--shop-rose-soft)", color: "var(--shop-rose-strong)" }}>
+                          has services
+                        </span>
+                      )}
                     </td>
                     <td className="px-6 py-4 text-sm font-semibold text-rose-600">
-                      ${order.totalAmount.toFixed(2)}
+                      ₹{order.totalAmount.toFixed(2)}
                     </td>
                     <td className="px-6 py-4 text-sm">
                       <span

@@ -74,7 +74,7 @@ export default async function OrdersPage() {
                 <div>
                   <p className="text-xs text-gray-600">Total</p>
                   <p className="text-sm font-semibold text-rose-600">
-                    ${order.totalAmount.toFixed(2)}
+                    ₹{order.totalAmount.toFixed(2)}
                   </p>
                 </div>
               </div>
@@ -87,7 +87,12 @@ export default async function OrdersPage() {
                 <div className="space-y-1">
                   {order.items.map((item, idx) => (
                     <p key={idx} className="text-sm text-gray-700">
-                      {item.name} × {item.quantity} @ ${item.price.toFixed(2)}
+                      {item.name} × {item.quantity} @ ₹{item.price.toFixed(2)}
+                      {(item as any).itemType === "service" && (
+                        <span className="ml-2 text-xs px-1.5 py-0.5 rounded" style={{ backgroundColor: "var(--shop-rose-soft)", color: "var(--shop-rose-strong)" }}>
+                          service
+                        </span>
+                      )}
                     </p>
                   ))}
                 </div>

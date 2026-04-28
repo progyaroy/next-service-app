@@ -43,23 +43,16 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
   try {
     const cart = await cartService.getCart(userId);
 
-    // Transform cart items to include product data
     if (cart && cart.items) {
       const transformedCart = {
         ...cart,
         items: cart.items.map((item: any) => ({
-          productId: item.productId?._id || item.productId,
+          itemId: String(item.itemId),
+          itemType: item.itemType || "product",
           quantity: item.quantity,
+          snapshotPrice: item.snapshotPrice || 0,
+          snapshotData: item.snapshotData || {},
           addedAt: item.addedAt,
-          product:
-            item.productId && typeof item.productId === "object"
-              ? {
-                  name: item.productId.name,
-                  price: item.productId.price,
-                  image: item.productId.image,
-                  stock: item.productId.stock,
-                }
-              : undefined,
         })),
       };
       return successResponse(transformedCart);

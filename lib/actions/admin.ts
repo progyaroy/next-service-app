@@ -131,3 +131,89 @@ export async function deleteProduct(id: string) {
   
   redirect("/admin/products");
 }
+
+// Service Actions
+import { serviceService } from "@/lib/services/service.service";
+
+function getFormArrayValue(formData: FormData, key: string): string[] {
+  const values = formData.getAll(key);
+  return values
+    .filter((v) => !(v instanceof File))
+    .map((v) => String(v).trim())
+    .filter(Boolean);
+}
+
+export async function createService(prevState: any, formData: FormData) {
+  const name = getFormValue(formData, "name");
+  const description = getFormValue(formData, "description");
+  const basePrice = parseFloat(getFormValue(formData, "basePrice") || "0");
+  const productIds = getFormArrayValue(formData, "includedProducts");
+
+  if (!name || !description || basePrice <= 0) {
+    return { error: "Service name, description, and base price are required" };
+  }
+
+  try {
+    const includedProducts = productIds.map((productId) => ({
+      productId,
+      quantity: 1,
+    }));
+
+    await serviceService.createService(
+      name,
+      description,
+      basePrice,
+      includedProducts.length > 0 ? includedProducts : undefined
+    );
+  } catch (error) {
+    console.error("Create service error:", error);
+    return { error: "Failed to create service" };
+  }
+
+  redirect("/admin/services");
+}
+
+export async function updateService(id: string, prevState: any, formData: FormData) {
+  const name = getFormValue(formData, "name");
+  const description = getFormValue(formData, "description");
+  const basePrice = parseFloat(getFormValue(formData, "basePrice") || "0");
+  const productIds = getFormArrayValue(formData, "includedProducts");
+
+  if (!name || !description || basePrice <= 0) {
+    return { error: "Service name, description, and base price are required" };
+  }
+
+  try {
+    const includedProducts = productIds.map((productId) => ({
+      productId,
+      quantity: 1,
+    }));
+
+    const result = await serviceService.updateService(id, {
+      name,
+      description,
+      basePrice,
+      includedProducts,
+    });
+
+    if (!result) {
+      return { error: "Service not found" };
+    }
+  } catch (error) {
+    console.error("Update service error:", error);
+    return { error: "Failed to update service" };
+  }
+
+  redirect("/admin/services");
+}
+
+export async function deleteService(id: string) {
+  try {
+    await serviceService.deleteService(id);
+  } catch (error) {
+    console.error("Delete service error:", error);
+    return { error: "Failed to delete service" };
+  }
+
+  redirect("/admin/services");
+}

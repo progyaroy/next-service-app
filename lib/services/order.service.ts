@@ -5,6 +5,7 @@ import { serialize } from "@/lib/db/serialize";
 import Order, { IOrder, OrderStatus, IOrderItem } from "@/lib/models/Order";
 import Cart from "@/lib/models/Cart";
 import Product from "@/lib/models/Product";
+import Service from "@/lib/models/Service";
 import { NotFoundError, ValidationError } from "@/lib/errors/AppError";
 import cartService from "@/lib/services/cart.service";
 import type { Types } from "mongoose";
@@ -19,9 +20,7 @@ class OrderService {
     await connectDB();
 
     // Get user's cart
-    const cart = await Cart.findOne({ userId })
-      .populate("items.productId", "name price stock")
-      .lean();
+    const cart = await Cart.findOne({ userId }).lean();
 
     if (!cart || cart.items.length === 0) {
       throw new ValidationError("Cart is empty", "EMPTY_CART");
@@ -32,28 +31,50 @@ class OrderService {
     let totalAmount = 0;
 
     for (const cartItem of cart.items) {
-      const product = await Product.findById(cartItem.productId);
+      if (cartItem.itemType === "product") {
+        const product = await Product.findById(cartItem.itemId);
 
-      if (!product) {
-        throw new NotFoundError("Product");
+        if (!product) {
+          throw new NotFoundError("Product");
+        }
+
+        if (product.stock < cartItem.quantity) {
+          throw new ValidationError(
+            `Insufficient stock for ${product.name}`,
+            "INSUFFICIENT_STOCK"
+          );
+        }
+
+        const itemTotal = cartItem.snapshotPrice * cartItem.quantity;
+        totalAmount += itemTotal;
+
+        orderItems.push({
+          itemId: product._id as Types.ObjectId,
+          itemType: "product",
+          name: product.name,
+          price: cartItem.snapshotPrice,
+          quantity: cartItem.quantity,
+          snapshotData: cartItem.snapshotData,
+        });
+      } else if (cartItem.itemType === "service") {
+        const service = await Service.findById(cartItem.itemId);
+
+        if (!service) {
+          throw new NotFoundError("Service");
+        }
+
+        const itemTotal = cartItem.snapshotPrice * cartItem.quantity;
+        totalAmount += itemTotal;
+
+        orderItems.push({
+          itemId: service._id as Types.ObjectId,
+          itemType: "service",
+          name: service.name,
+          price: cartItem.snapshotPrice,
+          quantity: cartItem.quantity,
+          snapshotData: cartItem.snapshotData,
+        });
       }
-
-      if (product.stock < cartItem.quantity) {
-        throw new ValidationError(
-          `Insufficient stock for ${product.name}`,
-          "INSUFFICIENT_STOCK"
-        );
-      }
-
-      const itemTotal = product.price * cartItem.quantity;
-      totalAmount += itemTotal;
-
-      orderItems.push({
-        productId: product._id as Types.ObjectId,
-        name: product.name,
-        price: product.price,
-        quantity: cartItem.quantity,
-      });
     }
 
     // Generate random stripe payment intent ID (no actual payment)
@@ -83,9 +104,7 @@ class OrderService {
     const order = await Order.findOne({
       _id: orderId,
       userId,
-    })
-      .populate("items.productId", "name image")
-      .lean();
+    }).lean();
 
     return serialize(order as OrderDTO | null);
   }
@@ -99,7 +118,6 @@ class OrderService {
     const orders = await Order.find({ userId })
       .sort({ createdAt: -1 })
       .limit(limit)
-      .populate("items.productId", "name image")
       .lean();
 
     return serialize(orders as OrderDTO[]);
@@ -114,8 +132,6 @@ class OrderService {
     const orders = await Order.find({})
       .sort({ createdAt: -1 })
       .limit(limit)
-      .populate("userId", "email")
-      .populate("items.productId", "name")
       .lean();
 
     return serialize(orders as OrderDTO[]);

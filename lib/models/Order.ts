@@ -1,12 +1,15 @@
 import mongoose, { Schema, Document, Types } from "mongoose";
 
 export type OrderStatus = "pending" | "completed" | "cancelled";
+export type OrderItemType = "product" | "service";
 
 export interface IOrderItem {
-  productId: Types.ObjectId;
+  itemId: Types.ObjectId;
+  itemType: OrderItemType;
   name: string;
   price: number;
   quantity: number;
+  snapshotData?: Record<string, any>;
 }
 
 export interface IOrder extends Document {
@@ -22,9 +25,13 @@ export interface IOrder extends Document {
 
 const orderItemSchema = new Schema<IOrderItem>(
   {
-    productId: {
+    itemId: {
       type: Schema.Types.ObjectId,
-      ref: "Product",
+      required: true,
+    },
+    itemType: {
+      type: String,
+      enum: ["product", "service"],
       required: true,
     },
     name: {
@@ -40,6 +47,10 @@ const orderItemSchema = new Schema<IOrderItem>(
       type: Number,
       required: true,
       min: 1,
+    },
+    snapshotData: {
+      type: Schema.Types.Mixed,
+      default: {},
     },
   },
   { _id: false }

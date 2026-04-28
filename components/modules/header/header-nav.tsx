@@ -32,6 +32,9 @@ export function HeaderNav({ user }: HeaderNavProps) {
         <ButtonLink href="/admin/products" variant="ghost" size="sm">
           Products
         </ButtonLink>
+        <ButtonLink href="/admin/services" variant="ghost" size="sm">
+          Services
+        </ButtonLink>
         <ButtonLink href="/admin/orders" variant="ghost" size="sm">
           Orders
         </ButtonLink>
@@ -52,6 +55,9 @@ export function HeaderNav({ user }: HeaderNavProps) {
         <ButtonLink href="/products" variant="ghost" size="sm">
           Products
         </ButtonLink>
+        <ButtonLink href="/services" variant="ghost" size="sm">
+          Services
+        </ButtonLink>
         <ButtonLink href="/account" variant="ghost" size="sm">
           Account
         </ButtonLink>
@@ -69,6 +75,9 @@ export function HeaderNav({ user }: HeaderNavProps) {
       </ButtonLink>
       <ButtonLink href="/products" variant="ghost" size="sm">
         Products
+      </ButtonLink>
+      <ButtonLink href="/services" variant="ghost" size="sm">
+        Services
       </ButtonLink>
       <ButtonLink href="/login" variant="ghost" size="sm">
         Sign in

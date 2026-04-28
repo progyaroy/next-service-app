@@ -87,17 +87,24 @@ export default async function OrderDetailsPage({
               {order.items.map((item, index) => (
                 <div key={index} className="flex justify-between py-4 first:pt-4 last:pb-0">
                   <div>
-                    <p className="font-medium text-gray-900">{item.name}</p>
+                    <div className="flex items-center gap-2">
+                      <p className="font-medium text-gray-900">{item.name}</p>
+                      {(item as any).itemType === "service" && (
+                        <span className="text-xs px-2 py-0.5 rounded" style={{ backgroundColor: "var(--shop-rose-soft)", color: "var(--shop-rose-strong)" }}>
+                          service
+                        </span>
+                      )}
+                    </div>
                     <p className="text-xs text-gray-600">
                       Qty: {item.quantity}
                     </p>
                   </div>
                   <div className="text-right">
                     <p className="font-semibold">
-                      ${(item.price * item.quantity).toFixed(2)}
+                      ₹{(item.price * item.quantity).toFixed(2)}
                     </p>
                     <p className="text-xs text-gray-600">
-                      ${item.price.toFixed(2)} each
+                      ₹{item.price.toFixed(2)} each
                     </p>
                   </div>
                 </div>
@@ -115,7 +122,7 @@ export default async function OrderDetailsPage({
             <CardContent className="space-y-3 pt-4">
               <div className="flex justify-between text-sm">
                 <span className="text-gray-600">Subtotal</span>
-                <span className="font-medium">${total.toFixed(2)}</span>
+                <span className="font-medium">₹{total.toFixed(2)}</span>
               </div>
               <div className="flex justify-between text-sm">
                 <span className="text-gray-600">Shipping</span>
@@ -125,7 +132,7 @@ export default async function OrderDetailsPage({
                 <div className="flex justify-between font-semibold">
                   <span>Total</span>
                   <span className="text-lg text-rose-600">
-                    ${total.toFixed(2)}
+                    ₹{total.toFixed(2)}
                   </span>
                 </div>
               </div>

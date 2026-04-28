@@ -1,15 +1,55 @@
 import mongoose, { Schema, Document, Types } from "mongoose";
 
+export type CartItemType = "product" | "service";
+
+export interface ICartItem {
+  itemId: Types.ObjectId;
+  itemType: CartItemType;
+  quantity: number;
+  snapshotPrice: number;
+  snapshotData?: Record<string, any>;
+  addedAt: Date;
+}
+
 export interface ICart extends Document {
   userId: Types.ObjectId;
-  items: Array<{
-    productId: Types.ObjectId;
-    quantity: number;
-    addedAt: Date;
-  }>;
+  items: ICartItem[];
   createdAt: Date;
   updatedAt: Date;
 }
+
+const cartItemSchema = new Schema<ICartItem>(
+  {
+    itemId: {
+      type: Schema.Types.ObjectId,
+      required: true,
+    },
+    itemType: {
+      type: String,
+      enum: ["product", "service"],
+      required: true,
+    },
+    quantity: {
+      type: Number,
+      required: true,
+      min: 1,
+    },
+    snapshotPrice: {
+      type: Number,
+      required: true,
+      min: 0,
+    },
+    snapshotData: {
+      type: Schema.Types.Mixed,
+      default: {},
+    },
+    addedAt: {
+      type: Date,
+      default: Date.now,
+    },
+  },
+  { _id: false }
+);
 
 const cartSchema = new Schema<ICart>(
   {
@@ -19,24 +59,10 @@ const cartSchema = new Schema<ICart>(
       required: true,
       unique: true,
     },
-    items: [
-      {
-        productId: {
-          type: Schema.Types.ObjectId,
-          ref: "Product",
-          required: true,
-        },
-        quantity: {
-          type: Number,
-          required: true,
-          min: 1,
-        },
-        addedAt: {
-          type: Date,
-          default: Date.now,
-        },
-      },
-    ],
+    items: {
+      type: [cartItemSchema],
+      default: [],
+    },
   },
   { timestamps: true }
 );

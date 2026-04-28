@@ -2,16 +2,15 @@
 
 import React, { createContext, useContext, useState, useEffect, useCallback } from "react";
 
+export type CartItemType = "product" | "service";
+
 export interface CartItem {
-  productId: string;
+  itemId: string;
+  itemType: CartItemType;
   quantity: number;
+  snapshotPrice: number;
+  snapshotData?: Record<string, any>;
   addedAt: string;
-  product?: {
-    name: string;
-    price: number;
-    image?: string;
-    stock: number;
-  };
 }
 
 export interface Cart {
@@ -77,14 +76,12 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     }
   }, []);
 
-  // Clear cart state immediately (used on logout)
   const clearCart = useCallback(() => {
     setCart(null);
     setItemCount(0);
     setError(null);
   }, []);
 
-  // Fetch cart once on mount
   useEffect(() => {
     refreshCart();
   }, [refreshCart]);

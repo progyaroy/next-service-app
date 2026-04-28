@@ -4,29 +4,54 @@ import { connectDB } from "@/lib/db/mongoose";
 import { serialize } from "@/lib/db/serialize";
 import Cart from "@/lib/models/Cart";
 import Product from "@/lib/models/Product";
-import type { ICart } from "@/lib/models/Cart";
+import Service from "@/lib/models/Service";
+import type { ICart, CartItemType } from "@/lib/models/Cart";
 
 export type CartDTO = Omit<ICart, "toObject" | "save">;
 
 class CartService {
   async getCart(userId: string): Promise<CartDTO | null> {
     await connectDB();
-    const cart = await Cart.findOne({ userId })
-      .populate("items.productId", "name price image stock")
-      .lean();
+    const cart = await Cart.findOne({ userId }).lean();
     return serialize(cart as CartDTO | null);
   }
 
-  async addToCart(userId: string, productId: string, quantity: number = 1): Promise<CartDTO> {
+  async addToCart(
+    userId: string,
+    itemId: string,
+    itemType: CartItemType = "product",
+    quantity: number = 1,
+    snapshotPrice?: number
+  ): Promise<CartDTO> {
     await connectDB();
 
-    // Verify product exists and has stock
-    const product = await Product.findById(productId);
-    if (!product) {
-      throw new Error("Product not found");
-    }
-    if (product.stock < quantity) {
-      throw new Error("Insufficient stock");
+    // Verify item exists and get snapshot price
+    let item: any;
+    let finalSnapshotPrice = snapshotPrice;
+
+    if (itemType === "product") {
+      item = await Product.findById(itemId);
+      if (!item) {
+        throw new Error("Product not found");
+      }
+      if (item.stock < quantity) {
+        throw new Error("Insufficient stock");
+      }
+      finalSnapshotPrice = finalSnapshotPrice || item.price;
+    } else if (itemType === "service") {
+      item = await Service.findById(itemId).populate("includedProducts.productId", "name price");
+      if (!item) {
+        throw new Error("Service not found");
+      }
+      // Calculate total price for service
+      let totalPrice = item.basePrice;
+      if (item.includedProducts && item.includedProducts.length > 0) {
+        totalPrice += item.includedProducts.reduce((sum: number, p: any) => {
+          const product = p.productId;
+          return sum + (product.price * (p.quantity || 1));
+        }, 0);
+      }
+      finalSnapshotPrice = finalSnapshotPrice || totalPrice;
     }
 
     let cart = await Cart.findOne({ userId });
@@ -35,21 +60,34 @@ class CartService {
       // Create new cart
       cart = await Cart.create({
         userId,
-        items: [{ productId, quantity, addedAt: new Date() }],
+        items: [
+          {
+            itemId,
+            itemType,
+            quantity,
+            snapshotPrice: finalSnapshotPrice,
+            snapshotData: item.toObject ? item.toObject() : item,
+            addedAt: new Date(),
+          },
+        ],
       });
     } else {
-      // Check if product already in cart
+      // Check if item already in cart
       const existingItem = cart.items.find(
-        (item: any) => item.productId.toString() === productId
+        (cartItem: any) =>
+          cartItem.itemId.toString() === itemId && cartItem.itemType === itemType
       );
 
       if (existingItem) {
-        // Allow adding same product again - increment quantity
+        // Increment quantity
         existingItem.quantity += quantity;
       } else {
         cart.items.push({
-          productId: productId as any,
+          itemId: itemId as any,
+          itemType,
           quantity,
+          snapshotPrice: finalSnapshotPrice,
+          snapshotData: item.toObject ? item.toObject() : item,
           addedAt: new Date(),
         });
       }
@@ -57,14 +95,11 @@ class CartService {
       await cart.save();
     }
 
-    const updated = await Cart.findOne({ userId })
-      .populate("items.productId", "name price image stock")
-      .lean();
-
+    const updated = await Cart.findOne({ userId }).lean();
     return serialize(updated as CartDTO);
   }
 
-  async removeFromCart(userId: string, productId: string): Promise<CartDTO | null> {
+  async removeFromCart(userId: string, itemId: string, itemType: CartItemType = "product"): Promise<CartDTO | null> {
     await connectDB();
 
     const cart = await Cart.findOne({ userId });
@@ -73,7 +108,7 @@ class CartService {
     }
 
     cart.items = cart.items.filter(
-      (item: any) => item.productId.toString() !== productId
+      (item: any) => !(item.itemId.toString() === itemId && item.itemType === itemType)
     );
 
     if (cart.items.length === 0) {
@@ -83,22 +118,20 @@ class CartService {
 
     await cart.save();
 
-    const updated = await Cart.findOne({ userId })
-      .populate("items.productId", "name price image stock")
-      .lean();
-
+    const updated = await Cart.findOne({ userId }).lean();
     return serialize(updated as CartDTO);
   }
 
   async updateQuantity(
     userId: string,
-    productId: string,
-    quantity: number
+    itemId: string,
+    quantity: number,
+    itemType: CartItemType = "product"
   ): Promise<CartDTO | null> {
     await connectDB();
 
     if (quantity < 1) {
-      return this.removeFromCart(userId, productId);
+      return this.removeFromCart(userId, itemId, itemType);
     }
 
     const cart = await Cart.findOne({ userId });
@@ -107,26 +140,25 @@ class CartService {
     }
 
     const item = cart.items.find(
-      (item: any) => item.productId.toString() === productId
+      (cartItem: any) => cartItem.itemId.toString() === itemId && cartItem.itemType === itemType
     );
 
     if (!item) {
-      throw new Error("Product not in cart");
+      throw new Error("Item not in cart");
     }
 
-    // Verify stock
-    const product = await Product.findById(productId);
-    if (!product || product.stock < quantity) {
-      throw new Error("Insufficient stock");
+    // Verify stock for products
+    if (itemType === "product") {
+      const product = await Product.findById(itemId);
+      if (!product || product.stock < quantity) {
+        throw new Error("Insufficient stock");
+      }
     }
 
     item.quantity = quantity;
     await cart.save();
 
-    const updated = await Cart.findOne({ userId })
-      .populate("items.productId", "name price image stock")
-      .lean();
-
+    const updated = await Cart.findOne({ userId }).lean();
     return serialize(updated as CartDTO);
   }
 

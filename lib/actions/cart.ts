@@ -3,6 +3,7 @@
 import { redirect } from "next/navigation";
 import { getCurrentUser } from "@/lib/auth/session";
 import cartService from "@/lib/services/cart.service";
+import type { CartItemType } from "@/lib/models/Cart";
 
 export type CartActionState = {
   error?: string;
@@ -15,21 +16,23 @@ export async function addToCartAction(
 ): Promise<CartActionState> {
   const user = await getCurrentUser();
 
+  const itemId = formData.get("itemId") as string;
+  const itemType = (formData.get("itemType") as CartItemType) || "product";
+
   if (!user) {
     // Redirect to login with return URL
-    const productId = formData.get("productId") as string;
-    redirect(`/login?next=/products/${productId}`);
+    const returnUrl = itemType === "service" ? `/services/${itemId}` : `/products/${itemId}`;
+    redirect(`/login?next=${returnUrl}`);
   }
 
-  const productId = formData.get("productId") as string;
   const quantity = parseInt(formData.get("quantity") as string) || 1;
 
-  if (!productId) {
-    return { error: "Product ID is required" };
+  if (!itemId) {
+    return { error: "Item ID is required" };
   }
 
   try {
-    await cartService.addToCart(user.id, productId, quantity);
+    await cartService.addToCart(user.id, itemId, itemType, quantity);
     return { success: true };
   } catch (error: any) {
     return { error: error.message || "Failed to add to cart" };
@@ -46,14 +49,15 @@ export async function removeFromCartAction(
     return { error: "Not authenticated" };
   }
 
-  const productId = formData.get("productId") as string;
+  const itemId = formData.get("itemId") as string;
+  const itemType = (formData.get("itemType") as CartItemType) || "product";
 
-  if (!productId) {
-    return { error: "Product ID is required" };
+  if (!itemId) {
+    return { error: "Item ID is required" };
   }
 
   try {
-    await cartService.removeFromCart(user.id, productId);
+    await cartService.removeFromCart(user.id, itemId, itemType);
     return { success: true };
   } catch (error: any) {
     return { error: error.message || "Failed to remove from cart" };
@@ -70,15 +74,16 @@ export async function updateCartQuantityAction(
     return { error: "Not authenticated" };
   }
 
-  const productId = formData.get("productId") as string;
+  const itemId = formData.get("itemId") as string;
+  const itemType = (formData.get("itemType") as CartItemType) || "product";
   const quantity = parseInt(formData.get("quantity") as string);
 
-  if (!productId || isNaN(quantity)) {
-    return { error: "Invalid product ID or quantity" };
+  if (!itemId || isNaN(quantity)) {
+    return { error: "Invalid item ID or quantity" };
   }
 
   try {
-    await cartService.updateQuantity(user.id, productId, quantity);
+    await cartService.updateQuantity(user.id, itemId, quantity, itemType);
     return { success: true };
   } catch (error: any) {
     return { error: error.message || "Failed to update cart" };
