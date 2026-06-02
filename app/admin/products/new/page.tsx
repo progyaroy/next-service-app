@@ -1,5 +1,5 @@
 import { categoryService } from "@/lib/services/product.service";
-import NewProduct from "@/components/modules/admin/products/new";
+import NewProduct from "@/features/admin/products/new";
 
 export const metadata = {
   title: "Add Product",

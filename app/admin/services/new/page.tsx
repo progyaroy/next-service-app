@@ -1,4 +1,4 @@
-import NewService from "@/components/modules/admin/services/new";
+import NewService from "@/features/admin/services/new";
 import { productService } from "@/lib/services/product.service";
 
 export default async function NewServicePage() {

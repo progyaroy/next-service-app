@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import ServiceDetails from "@/components/modules/common/service-details";
+import ServiceDetails from "@/features/common/service-details";
 import { connectDB } from "@/lib/db/mongoose";
 import Service from "@/lib/models/Service";
 

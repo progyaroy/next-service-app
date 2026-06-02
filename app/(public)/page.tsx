@@ -1,4 +1,4 @@
-import Home, { homeMetadata } from "@/components/modules/home";
+import Home, { homeMetadata } from "@/features/home";
 
 export const metadata = homeMetadata;
 

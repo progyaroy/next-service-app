@@ -1,6 +1,6 @@
 import { connectDB } from "@/lib/db/mongoose";
 import Product from "@/lib/models/Product";
-import { ProductsList } from "@/components/modules/admin/products/list";
+import { ProductsList } from "@/features/admin/products/list";
 
 export const metadata = {
   title: "Products",

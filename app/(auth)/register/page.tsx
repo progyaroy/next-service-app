@@ -1,4 +1,4 @@
-import Register from "@/components/modules/auth/register";
+import Register from "@/features/auth/register";
 
 // export const metadata = registerMetadata;
 

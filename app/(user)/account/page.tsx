@@ -1,4 +1,4 @@
-import Account from "@/components/modules/account";
+import Account from "@/features/account";
 
 export const metadata = {
   title: "Account",

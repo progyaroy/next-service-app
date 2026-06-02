@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import EditServiceForm from "@/components/modules/admin/services/edit";
+import EditServiceForm from "@/features/admin/services/edit";
 import { serviceService } from "@/lib/services/service.service";
 import { productService } from "@/lib/services/product.service";
 

@@ -1,5 +1,5 @@
 import { productService } from "@/lib/services/product.service";
-import ProductDetails from "@/components/modules/common/details";
+import ProductDetails from "@/features/common/details";
 
 export const revalidate = 60; // ISR
 

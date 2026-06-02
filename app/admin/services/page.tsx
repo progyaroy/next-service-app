@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { ServicesList } from "@/components/modules/admin/services/list";
+import { ServicesList } from "@/features/admin/services/list";
 import { serviceService } from "@/lib/services/service.service";
 
 export const revalidate = 60;

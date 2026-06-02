@@ -2,8 +2,8 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import ShippingForm, { ShippingAddress } from "@/components/modules/payment/shipping-form";
-import CheckoutForm from "@/components/modules/payment/checkout-form";
+import ShippingForm, { ShippingAddress } from "@/features/payment/shipping-form";
+import CheckoutForm from "@/features/payment/checkout-form";
 import { Card, CardContent, CardTitle } from "@/components/ui";
 
 interface CheckoutResponse {

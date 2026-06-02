@@ -1,4 +1,4 @@
-import NewCategory from "@/components/modules/admin/categories/new";
+import NewCategory from "@/features/admin/categories/new";
 
 export const metadata = {
   title: "Add Category",

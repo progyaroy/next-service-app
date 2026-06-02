@@ -1,3 +1,3 @@
-import NotFound from "@/components/modules/not-found";
+import NotFound from "@/features/not-found";
 
 export default NotFound;

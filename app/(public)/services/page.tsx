@@ -1,4 +1,4 @@
-import Services from "@/components/modules/common/services";
+import Services from "@/features/common/services";
 import { serviceService } from "@/lib/services/service.service";
 import { connectDB } from "@/lib/db/mongoose";
 import Service from "@/lib/models/Service";

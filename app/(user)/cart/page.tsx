@@ -1,4 +1,4 @@
-import CartModule from "@/components/modules/cart";
+import CartModule from "@/features/cart";
 
 export const metadata = {
   title: "Shopping Cart",

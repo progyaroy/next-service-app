@@ -55,7 +55,7 @@
 
 // ====================== WITHOUT API ========================
 
-import Products from "@/components/modules/common/products";
+import Products from "@/features/common/products";
 import { connectDB } from "@/lib/db/mongoose";
 import Product from "@/lib/models/Product";
 import Category from "@/lib/models/Category";

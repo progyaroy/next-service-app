@@ -1,4 +1,4 @@
-import EditCategoryForm from "@/components/modules/admin/categories/edit";
+import EditCategoryForm from "@/features/admin/categories/edit";
 import { categoryService } from "@/lib/services/product.service";
 
 export const metadata = {

@@ -1,6 +1,6 @@
 import { connectDB } from "@/lib/db/mongoose";
 import Category from "@/lib/models/Category";
-import { CategoriesList } from "@/components/modules/admin/categories/list";
+import { CategoriesList } from "@/features/admin/categories/list";
 
 export const metadata = {
   title: "Categories",

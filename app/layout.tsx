@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { Suspense } from "react";
-import { SiteHeader } from "@/components/modules/header/site-header";
+import { SiteHeader } from "@/features/header/site-header";
 import { CartProvider } from "@/lib/context/CartContext";
 import { ErrorBoundary } from "@/components/error-boundary";
 import "./globals.css";
