@@ -50,6 +50,9 @@ export function HeaderNav({ user }: HeaderNavProps) {
         <ButtonLink href="/account" variant="ghost" size="sm">
           Account
         </ButtonLink>
+        <ButtonLink href="/chat" variant="ghost" size="sm">
+          Chat
+        </ButtonLink>
         <CartIcon />
         {LogoutButton}
       </nav>

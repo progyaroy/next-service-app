@@ -48,6 +48,12 @@ export default async function UserLayout({
           >
             Settings
           </Link>
+          <Link
+            href="/chat"
+            className="block px-4 py-2 rounded-lg text-gray-700 hover:bg-gray-100 transition-colors"
+          >
+            Chat
+          </Link>
         </nav>
 
         <div className="mt-8 pt-8 border-t border-gray-200">

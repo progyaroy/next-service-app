@@ -3,6 +3,28 @@ import { jwtVerify } from "jose";
 
 const COOKIE_NAME = "parlour_session";
 
+function buildCorsHeaders(request: NextRequest): Headers {
+  const headers = new Headers();
+  const origin = request.headers.get("origin");
+
+  if (origin) {
+    headers.set("Access-Control-Allow-Origin", origin);
+    headers.set("Access-Control-Allow-Credentials", "true");
+    headers.set("Vary", "Origin");
+  } else {
+    headers.set("Access-Control-Allow-Origin", "*");
+  }
+
+  headers.set("Access-Control-Allow-Methods", "GET,POST,PUT,PATCH,DELETE,OPTIONS");
+  headers.set(
+    "Access-Control-Allow-Headers",
+    "Content-Type, Authorization, X-Requested-With, Accept, Origin"
+  );
+  headers.set("Access-Control-Max-Age", "86400");
+
+  return headers;
+}
+
 function getSecretKey(): Uint8Array {
   const raw = process.env.AUTH_SECRET;
   if (raw && raw.length >= 32) {
@@ -18,6 +40,22 @@ function getSecretKey(): Uint8Array {
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
+
+  // Allow API access from any origin/port and handle preflight requests globally.
+  if (pathname.startsWith("/api")) {
+    const corsHeaders = buildCorsHeaders(request);
+
+    if (request.method === "OPTIONS") {
+      return new NextResponse(null, {
+        status: 204,
+        headers: corsHeaders,
+      });
+    }
+
+    const response = NextResponse.next();
+    corsHeaders.forEach((value, key) => response.headers.set(key, value));
+    return response;
+  }
 
   // ✅ IMPORTANT: skip middleware for RSC / internal requests
   const isRSC =
@@ -63,7 +101,8 @@ export async function middleware(request: NextRequest) {
       pathname.startsWith("/cart") ||
       pathname.startsWith("/payment") ||
       pathname.startsWith("/order") ||
-      pathname.startsWith("/account");
+      pathname.startsWith("/account") ||
+      pathname.startsWith("/chat");
 
     if (role === "admin" && isUserOnlyRoute) {
       return NextResponse.redirect(new URL("/admin", request.url));
@@ -86,6 +125,7 @@ export async function middleware(request: NextRequest) {
 
 export const config = {
   matcher: [
+    "/api/:path*",
     "/admin/:path*",
     "/account/:path*",
     "/cart/:path*",
@@ -95,6 +135,8 @@ export const config = {
     "/order-confirmation/:path*",
     "/profile/:path*",
     "/settings/:path*",
+    "/chat/:path*",
+    "/chat",
     "/login",
     "/register",
   ],

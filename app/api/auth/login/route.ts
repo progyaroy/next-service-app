@@ -32,7 +32,8 @@ export const POST = withErrorHandling(async (req: NextRequest) => {
     .setExpirationTime(`${sessionDuration}s`)
     .sign(getSecretKey());
 
-  const payload = { id: user._id.toString(), email: user.email, role: user.role };
+  const user_data = { id: user._id.toString(), email: user.email, role: user.role };
+  const payload = { user: user_data, token : token };
   const res = successResponse(payload);
   const response = NextResponse.json(await res.json(), { status: 200 });
   response.cookies.set(COOKIE_NAME, token, {

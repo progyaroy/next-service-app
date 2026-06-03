@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { AppError, isAppError, isError } from "@/lib/errors/AppError";
+import { isAppError, isError } from "@/lib/errors/AppError";
 
 /**
  * Standard API response format
@@ -63,12 +63,12 @@ export function errorResponse(
 /**
  * Wrapper for API route handlers with automatic error handling
  */
-export function withErrorHandling(
-  handler: (req: any) => Promise<NextResponse>
+export function withErrorHandling<TArgs extends unknown[]>(
+  handler: (...args: TArgs) => Promise<NextResponse>
 ) {
-  return async (req: any) => {
+  return async (...args: TArgs) => {
     try {
-      return await handler(req);
+      return await handler(...args);
     } catch (error) {
       console.error("API Error:", error);
       return errorResponse(error);

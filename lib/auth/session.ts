@@ -99,6 +99,8 @@ export async function getCurrentUser(): Promise<User | null> {
     return {
       id: user._id.toString(),
       email: user.email,
+      username: user.username || user.email.split("@")[0],
+      name: user.name || user.email.split("@")[0],
       role: user.role,
       createdAt: user.createdAt.getTime(),
     };
